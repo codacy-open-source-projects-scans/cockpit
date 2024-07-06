@@ -1432,7 +1432,7 @@ export const StopProcessesMessage = ({ mount_point, users }) => {
                                           { title: _("PID"), props: colprops },
                                           { title: _("Command"), props: colprops },
                                           { title: _("User"), props: colprops },
-                                          { title: _("Runtime"), props: colprops }
+                                          { title: _("Started"), props: colprops }
                                       ]
                                   }
                                       rows={process_rows} />
@@ -1452,7 +1452,7 @@ export const StopProcessesMessage = ({ mount_point, users }) => {
                                           { title: _("Service"), props: colprops },
                                           { title: _("Command"), props: colprops },
                                           { title: _("Description"), props: colprops },
-                                          { title: _("Runtime"), props: colprops }
+                                          { title: _("Started"), props: colprops }
                                       ]
                                   }
                                   rows={service_rows} />

@@ -126,7 +126,7 @@ export class SystemInformationCard extends React.Component {
                                 </td>
                             </tr>
                             <tr className="pf-v5-c-table__tr">
-                                <th className="pf-v5-c-table__th system-information-uptime" scope="row">{_("Uptime")}</th>
+                                <th className="pf-v5-c-table__th system-information-uptime" scope="row">{_("Up since")}</th>
                                 <td className="pf-v5-c-table__td">
                                     <div id="system_uptime">{this.state.systemUptime}</div>
                                 </td>

@@ -657,6 +657,7 @@ OnCalendar=daily
             b.wait_in_text(f"#file-autocomplete-widget-preselected li:nth-of-type({i + 1}) button", paths[i])
 
     @testlib.skipOstree("No PCP available")
+    @testlib.skipImage("pcp not currently in testing", "debian-testing")
     def testPlots(self):
         b = self.browser
         m = self.machine
@@ -971,6 +972,7 @@ OnCalendar=daily
 
         self.login_and_go("/playground/test")
         b.wait_visible("#user-info")
+        b.wait(lambda: "groups" in b.text("#user-info"))
         user_info = json.loads(b.text("#user-info"))
         self.assertEqual(user_info["home"], "/var/home/admin" if m.ostree_image else "/home/admin")
         # default group is first
