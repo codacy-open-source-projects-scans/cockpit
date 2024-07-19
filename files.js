@@ -1,4 +1,5 @@
-import path from 'path';
+import path from 'node:path';
+import process from 'node:process';
 
 const info = {
     entries: [
@@ -46,6 +47,7 @@ const info = {
         "base1/test-browser-storage.js",
         "base1/test-cache.js",
         "base1/test-chan.js",
+        "base1/test-channel.ts",
         "base1/test-dbus-address.js",
         "base1/test-dbus-framed.js",
         "base1/test-dbus.js",

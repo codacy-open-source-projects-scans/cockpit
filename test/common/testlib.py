@@ -518,8 +518,11 @@ class Browser:
 
     def input_text(self, text: str) -> None:
         for char in text:
-            self.cdp.invoke("Input.dispatchKeyEvent", type="keyDown", text=char, key=char)
-            self.cdp.invoke("Input.dispatchKeyEvent", type="keyUp", text=char, key=char)
+            if char == "\n":
+                self.key("Enter")
+            else:
+                self.cdp.invoke("Input.dispatchKeyEvent", type="keyDown", text=char, key=char)
+                self.cdp.invoke("Input.dispatchKeyEvent", type="keyUp", text=char, key=char)
 
     def key(self, name: str, repeat: int = 1, modifiers: int = 0) -> None:
         """Press and release a named keyboard key.
@@ -975,6 +978,35 @@ class Browser:
         m = re.search(r"width: (\d+)%;", style)
         assert m is not None
         return int(m.group(1))
+
+    def start_machine_troubleshoot(
+        self,
+        new: bool = False,
+        known_host: bool = False,
+        password: str | None = None,
+        expect_closed_dialog: bool = True,
+    ) -> None:
+        self.click('#machine-troubleshoot')
+
+        self.wait_visible('#hosts_setup_server_dialog')
+        if new:
+            self.click('#hosts_setup_server_dialog button:contains(Add)')
+            if not known_host:
+                self.wait_in_text('#hosts_setup_server_dialog', "You are connecting to")
+                self.wait_in_text('#hosts_setup_server_dialog', "for the first time.")
+                self.click("#hosts_setup_server_dialog button:contains('Trust and add host')")
+        if password:
+            self.wait_in_text('#hosts_setup_server_dialog', "Unable to log in")
+            self.set_input_text('#login-custom-password', password)
+            self.click('#hosts_setup_server_dialog button:contains(Log in)')
+        if expect_closed_dialog:
+            self.wait_not_present('#hosts_setup_server_dialog')
+
+    def add_machine(self, address: str, known_host: bool = False, password: str = "foobar") -> None:
+        self.switch_to_top()
+        self.go(f"/@{address}")
+        self.start_machine_troubleshoot(new=True, known_host=known_host, password=password)
+        self.enter_page("/system", host=address)
 
     def ignore_ssl_certificate_errors(self, ignore: bool) -> None:
         action = "continue" if ignore else "cancel"
@@ -1732,6 +1764,7 @@ class MachineCase(unittest.TestCase):
         path: str | None = None,
         *,
         user: str | None = None,
+        password: str | None = None,
         host: str | None = None,
         superuser: bool = True,
         urlroot: str | None = None,
@@ -1743,42 +1776,8 @@ class MachineCase(unittest.TestCase):
         self.machine.start_cockpit(tls=tls)
         # first load after starting cockpit tends to take longer, due to on-demand service start
         with self.browser.wait_timeout(30):
-            self.browser.login_and_go(path, user=user, host=host, superuser=superuser, urlroot=urlroot, tls=tls)
-
-    def start_machine_troubleshoot(
-        self,
-        new: bool = False,
-        known_host: bool = False,
-        password: str | None = None,
-        expect_closed_dialog: bool = True,
-        browser: Browser | None = None
-    ) -> None:
-        b = browser or self.browser
-
-        b.click('#machine-troubleshoot')
-
-        b.wait_visible('#hosts_setup_server_dialog')
-        if new:
-            b.click('#hosts_setup_server_dialog button:contains(Add)')
-            if not known_host:
-                b.wait_in_text('#hosts_setup_server_dialog', "You are connecting to")
-                b.wait_in_text('#hosts_setup_server_dialog', "for the first time.")
-                b.click("#hosts_setup_server_dialog button:contains('Trust and add host')")
-        if password:
-            b.wait_in_text('#hosts_setup_server_dialog', "Unable to log in")
-            b.set_input_text('#login-custom-password', password)
-            b.click('#hosts_setup_server_dialog button:contains(Log in)')
-        if expect_closed_dialog:
-            b.wait_not_present('#hosts_setup_server_dialog')
-
-    def add_machine(
-        self, address: str, known_host: bool = False, password: str = "foobar", browser: Browser | None = None
-    ) -> None:
-        b = browser or self.browser
-        b.switch_to_top()
-        b.go(f"/@{address}")
-        self.start_machine_troubleshoot(new=True, known_host=known_host, password=password, browser=browser)
-        b.enter_page("/system", host=address)
+            self.browser.login_and_go(path, user=user, password=password, host=host, superuser=superuser,
+                                      urlroot=urlroot, tls=tls)
 
     # List of allowed journal messages during tests; these need to match the *entire* message
     default_allowed_messages = [
@@ -1884,10 +1883,6 @@ class MachineCase(unittest.TestCase):
         "error: Could not determine kpatch packages:.*PackageKit crashed",
     ]
 
-    if testvm.DEFAULT_IMAGE.startswith('rhel-8'):
-        # old occasional bugs in tracer, don't happen in newer versions any more
-        default_allowed_console_errors.append('Tracer failed:.*Traceback')
-
     env_allow = os.environ.get("TEST_ALLOW_BROWSER_ERRORS")
     if env_allow:
         default_allowed_console_errors += env_allow.split(",")
@@ -1917,7 +1912,7 @@ class MachineCase(unittest.TestCase):
                                     ".*couldn't create polkit session subject: No session for pid.*",
                                     "We are no longer a registered authentication agent.",
                                     ".*: failed to retrieve resource: terminated",
-                                    ".*: external channel failed: (terminated|protocol-error)",
+                                    ".*: external channel failed:.*",
                                     ".*: truncated data in external channel",
                                     'audit:.*denied.*comm="systemd-user-se".*nologin.*',
                                     ".*No session for cookie",
@@ -1933,6 +1928,9 @@ class MachineCase(unittest.TestCase):
                                     # and this is the resulting message
                                     'which: no python in .*'
                                     )
+
+        # happens when logging out quickly while tracer is running
+        self.allow_browser_errors("Tracer failed:.*internal-error")
 
     def check_journal_messages(self, machine: testvm.Machine | None = None) -> None:
         """Check for unexpected journal entries."""

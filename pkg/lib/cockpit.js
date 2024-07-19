@@ -19,16 +19,16 @@
 
 /* eslint-disable indent,no-empty */
 
-import { base64_encode, base64_decode } from './_internal/base64';
-import { Channel } from './_internal/channel';
+import { base64_encode, base64_decode } from './cockpit/_internal/base64';
+import { Channel } from './cockpit/_internal/channel';
 import {
     in_array, is_function, is_object, is_plain_object, invoke_functions, iterate_data, join_data
-} from './_internal/common';
-import { Deferred, later_invoke } from './_internal/deferred';
-import { event_mixin } from './_internal/event-mixin';
-import { url_root, transport_origin, calculate_application, calculate_url } from './_internal/location';
-import { ensure_transport, transport_globals } from './_internal/transport';
-import { FsInfoClient } from "./fsinfo";
+} from './cockpit/_internal/common';
+import { Deferred, later_invoke } from './cockpit/_internal/deferred';
+import { event_mixin } from './cockpit/_internal/event-mixin';
+import { url_root, transport_origin, calculate_application, calculate_url } from './cockpit/_internal/location';
+import { ensure_transport, transport_globals } from './cockpit/_internal/transport';
+import { FsInfoClient } from "./cockpit/fsinfo";
 
 function factory() {
     const cockpit = { };
@@ -77,7 +77,7 @@ function factory() {
         cockpit.transport.control("hint", options);
     };
 
-    cockpit.transport = transport_globals.public_transport = {
+    cockpit.transport = {
         wait: ensure_transport,
         inject: function inject(message, out) {
             if (!transport_globals.default_transport)
@@ -89,12 +89,8 @@ function factory() {
         },
         filter: function filter(callback, out) {
             if (out) {
-                if (!transport_globals.outgoing_filters)
-                    transport_globals.outgoing_filters = [];
-                transport_globals.outgoing_filters.push(callback);
+                console.error("'out' filters are no longer supported");
             } else {
-                if (!transport_globals.incoming_filters)
-                    transport_globals.incoming_filters = [];
                 transport_globals.incoming_filters.push(callback);
             }
         },
@@ -1084,6 +1080,10 @@ function factory() {
             Object.assign(cockpit.info, options.system);
         if (options.system)
             cockpit.info.dispatchEvent("changed");
+
+        cockpit.transport.options = options;
+        cockpit.transport.csrf_token = options["csrf-token"];
+        cockpit.transport.host = transport_globals.default_host;
     };
 
     let the_user = null;

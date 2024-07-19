@@ -21,6 +21,7 @@ import errno
 import os
 import signal
 import subprocess
+import sys
 import unittest.mock
 from typing import Any, List, Optional, Tuple
 
@@ -297,15 +298,10 @@ class TestSubprocessTransport:
 
     @pytest.mark.asyncio
     async def test_safe_watcher_ENOSYS(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.setattr(asyncio, 'PidfdChildWatcher', unittest.mock.Mock(side_effect=OSError), raising=False)
-        protocol, transport = self.subprocess(['true'])
-        watcher = transport._get_watcher(asyncio.get_running_loop())
-        assert isinstance(watcher, asyncio.SafeChildWatcher)
-        await protocol.eof_and_exited_with_code(0)
+        if sys.version_info >= (3, 12, 0):
+            pytest.skip()
 
-    @pytest.mark.asyncio
-    async def test_safe_watcher_oldpy(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delattr(asyncio, 'PidfdChildWatcher', raising=False)
+        monkeypatch.setattr(asyncio, 'PidfdChildWatcher', unittest.mock.Mock(side_effect=OSError), raising=False)
         protocol, transport = self.subprocess(['true'])
         watcher = transport._get_watcher(asyncio.get_running_loop())
         assert isinstance(watcher, asyncio.SafeChildWatcher)

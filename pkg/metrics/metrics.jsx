@@ -200,7 +200,7 @@ const HISTORY_METRICS = [
     { name: "disk.all.total_bytes", derive: "rate" },
 
     // network utilization
-    { name: "network.interface.total.bytes", derive: "rate", "omit-instances": ["lo"] },
+    { name: "network.interface.total.bytes", derive: "rate" },
 ];
 
 function debug() {
@@ -1710,6 +1710,7 @@ class MetricsHistory extends React.Component {
             timestamp: load_timestamp,
             limit,
             metrics: HISTORY_METRICS,
+            "omit-instances": ["lo"],
         });
 
         metrics.addEventListener("message", (event, message) => {
@@ -1817,7 +1818,8 @@ class MetricsHistory extends React.Component {
             return <EmptyStatePanel
                         icon={ExclamationCircleIcon}
                         title={_("You need to relogin to be able to see metrics history")}
-                        action={<Button onClick={() => cockpit.logout(true)}>{_("Log out")}</Button>}
+                        action={_("Log out")}
+                        onAction={() => cockpit.logout(true)}
             />;
 
         // on a single machine, cockpit-pcp depends on pcp; but this may not be the case in the beiboot scenario,

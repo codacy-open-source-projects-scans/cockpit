@@ -16,6 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import '_internal/common'; // side-effecting import (`window` augmentations)
+
 declare module 'cockpit' {
     type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
     type JsonObject = Record<string, JsonValue>;
@@ -118,33 +120,43 @@ declare module 'cockpit' {
         send(data: T): void;
         control(options: ControlMessage): void;
         wait(): Promise<void>;
-        close(options?: JsonObject): void;
+        close(options?: string | JsonObject): void;
     }
 
+    // these apply to all channels
     interface ChannelOptions {
-        payload: string;
         superuser?: "try" | "require";
         [_: string]: JsonValue | undefined;
+        binary?: boolean,
+
+        // for remote channels
+        host?: string;
+        user?: string;
+        password?: string;
+        session?: "shared" | "private";
     }
 
-    function channel(options: ChannelOptions & { binary?: false; }): Channel<string>;
-    function channel(options: ChannelOptions & { binary: true; }): Channel<Uint8Array>;
+    // this applies to opening a generic channel() with explicit payload
+    interface ChannelOpenOptions extends ChannelOptions {
+        payload: string;
+    }
 
-    /* === cockpit.spawn ============================= */
+    function channel(options: ChannelOpenOptions & { binary?: false; }): Channel<string>;
+    function channel(options: ChannelOpenOptions & { binary: true; }): Channel<Uint8Array>;
+
+    /* === cockpit.{spawn,script} ============================= */
 
     interface Spawn<T> extends DeferredPromise<T> {
         input(message?: T | null, stream?: boolean): DeferredPromise<T>;
         stream(callback: (data: T) => void): DeferredPromise<T>;
-        close(): void;
+        close(options?: string | JsonObject): void;
     }
 
-    interface SpawnOptions {
-        binary?: boolean,
+    interface SpawnOptions extends ChannelOptions {
         directory?: string;
         err?: "out" | "ignore" | "message";
         environ?: string[];
         pty?: boolean;
-        superuser?: "try" | "require";
     }
 
     function spawn(
@@ -154,6 +166,17 @@ declare module 'cockpit' {
     function spawn(
         args: string[],
         options: SpawnOptions & { binary: true }
+    ): Spawn<Uint8Array>;
+
+    function script(
+        script: string,
+        args?: string[],
+        options?: SpawnOptions & { binary?: false }
+    ): Spawn<string>;
+    function script(
+        script: string,
+        args?: string[],
+        options?: SpawnOptions & { binary: true }
     ): Spawn<Uint8Array>;
 
     /* === cockpit.location ========================== */
@@ -271,12 +294,16 @@ declare module 'cockpit' {
 
     function message(problem: string | JsonObject): string;
 
+    function format(format_string: string, ...args: unknown[]): string;
+
+    /* === i18n ===================== */
+
     function gettext(message: string): string;
     function gettext(context: string, message?: string): string;
     function ngettext(message1: string, messageN: string, n: number): string;
     function ngettext(context: string, message1: string, messageN: string, n: number): string;
 
-    function format(format_string: string, ...args: unknown[]): string;
+    function translate(): void;
 
     /* === Number formatting ===================== */
 
@@ -294,4 +321,7 @@ declare module 'cockpit' {
     /** @deprecated */ function format_bytes(n: MaybeNumber, factor: unknown, options?: object | boolean): string | string[];
     /** @deprecated */ function format_bytes_per_sec(n: MaybeNumber, factor: unknown, options?: object | boolean): string | string[];
     /** @deprecated */ function format_bits_per_sec(n: MaybeNumber, factor: unknown, options?: object | boolean): string | string[];
+
+    /* === Session ====================== */
+    function logout(reload: boolean, reason?: string): void;
 }
