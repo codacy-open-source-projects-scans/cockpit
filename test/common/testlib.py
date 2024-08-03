@@ -1437,8 +1437,9 @@ class MachineCase(unittest.TestCase):
                 self.network = network
             networking = self.network.host(restrict=restrict, forward=forward or {})
             machine = machine_class(verbose=opts.trace, networking=networking, image=image, **kwargs)
-            if opts.fetch and not os.path.exists(machine.image_file):
-                machine.pull(machine.image_file)
+            image_file = machine.image_file  # type: ignore[attr-defined]
+            if opts.fetch and not os.path.exists(image_file):
+                machine.pull(image_file)
             if cleanup:
                 self.addCleanup(machine.kill)
         return machine
@@ -1621,6 +1622,9 @@ class MachineCase(unittest.TestCase):
             else:
                 self.sshd_socket = 'sshd.socket'
         self.restart_sshd = f'systemctl try-restart {self.sshd_service}'
+
+        # only enabled by default on released OSes; see pkg/shell/manifest.json
+        self.multihost_enabled = image.startswith(("rhel-9", "centos-9")) or image in ["ubuntu-2204", "ubuntu-stable", "debian-stable", "fedora-39", "fedora-40", "fedora-coreos"]
 
     def nonDestructiveSetup(self) -> None:
         """generic setUp/tearDown for @nondestructive tests"""
