@@ -235,6 +235,11 @@ class Browser:
             self.layouts = [layout for layout in self.layouts if layout["theme"] != "dark"]
         self.current_layout = None
 
+        # we don't have a proper SSL certificate for our tests, ignore it
+        # Firefox does not support this, tests which rely on it need to skip it
+        if self.cdp.browser.name == "chromium":
+            self.cdp.command("setSSLBadCertificateAction('continue')")
+
     def allow_download(self) -> None:
         """Allow browser downloads"""
         if self.cdp.browser.name == "chromium":
@@ -1021,12 +1026,6 @@ class Browser:
         self.start_machine_troubleshoot(new=True, known_host=known_host, password=password)
         self.enter_page("/system", host=address)
 
-    def ignore_ssl_certificate_errors(self, ignore: bool) -> None:
-        action = "continue" if ignore else "cancel"
-        if opts.trace:
-            print("-> Setting SSL certificate error policy to %s" % action)
-        self.cdp.command(f"setSSLBadCertificateAction('{action}')")
-
     def grant_permissions(self, *args: str) -> None:
         """Grant permissions to the browser"""
         # https://chromedevtools.github.io/devtools-protocol/tot/Browser/#method-grantPermissions
@@ -1366,7 +1365,7 @@ class Browser:
 
         if self.cdp and self.cdp.valid:
             self.switch_to_top()
-            if self.is_present("#navbar-oops"):
+            if self.eval_js("!!document.getElementById('navbar-oops')"):
                 assert not self.is_visible("#navbar-oops"), "Cockpit shows an Oops"
 
 
@@ -1775,6 +1774,12 @@ class MachineCase(unittest.TestCase):
             self._terminate_sessions()
 
         shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def enable_multihost(self, machine: testvm.Machine) -> None:
+        if not self.multihost_enabled:
+            machine.write("/etc/cockpit/cockpit.conf",
+                          '[WebService]\nAllowMultiHost=yes\n')
+            machine.restart_cockpit()
 
     def login_and_go(
         self,

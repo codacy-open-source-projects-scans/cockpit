@@ -68,7 +68,7 @@ def prepareArchive(machine, name, time, hostname="localhost.localdomain"):
 def redisService(image):
     if image.startswith(("debian", "ubuntu")):
         return "redis-server"
-    if image.startswith("fedora"):
+    if image.startswith(("fedora", "centos-10", "rhel-10")):
         return "valkey"
     return "redis"
 
@@ -1516,6 +1516,8 @@ class TestGrafanaClient(testlib.MachineCase):
         except Exception:
             bg.snapshot("FAIL-grafana")
             raise
+        finally:
+            bg.kill()
 
 
 if __name__ == '__main__':
