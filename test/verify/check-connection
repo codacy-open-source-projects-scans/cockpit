@@ -57,7 +57,6 @@ class TestConnection(testlib.MachineCase):
             # show the leaked processes in the assertion
             self.fail(m.execute("pgrep -au admin '(cockpit|ssh-agent)'"))
 
-    @testlib.skipBrowser("Firefox cannot work with cookies", "firefox")
     def testBasic(self):
         m = self.machine
 
@@ -107,7 +106,7 @@ class TestConnection(testlib.MachineCase):
         # cookie should not be marked as secure, it's not https
         cookie = b.cookie("cockpit")
         self.assertTrue(cookie["httpOnly"])
-        self.assertEqual(cookie["sameSite"], "Strict")
+        self.assertEqual(cookie["sameSite"], "strict")
         self.assertFalse(cookie["secure"])
 
         # take cockpit-ws down on the server page
@@ -358,7 +357,6 @@ class TestConnection(testlib.MachineCase):
         out = m.execute("curl --silent --show-error --head --unix-socket /run/cockpit/wsinstance/https@new.sock http://dummy")
         self.assertIn("HTTP/1.1 200 OK", out)
 
-    @testlib.skipBrowser("Firefox needs proper cert and CA", "firefox")
     @testlib.nondestructive
     def testTls(self):
         m = self.machine
@@ -502,14 +500,14 @@ class TestConnection(testlib.MachineCase):
         # cookie should be marked as secure
         self.assertTrue(cookie["httpOnly"])
         self.assertTrue(cookie["secure"])
-        self.assertEqual(cookie["sameSite"], "Strict")
+        self.assertEqual(cookie["sameSite"], "strict")
         # same after logout
         b.logout()
         cookie = b.cookie("cockpit")
         self.assertEqual(cookie["value"], "deleted")
         self.assertTrue(cookie["httpOnly"])
         self.assertTrue(cookie["secure"])
-        self.assertEqual(cookie["sameSite"], "Strict")
+        self.assertEqual(cookie["sameSite"], "strict")
 
         # http on localhost should not redirect to https
         self.assertIn("HTTP/1.1 200 OK", m.execute("curl --head http://127.0.0.1:9090"))
@@ -978,7 +976,6 @@ until pgrep -f '^(/usr/[^ ]+/[^ /]*python[^ /]* )?/usr/bin/cockpit-bridge'; do s
         self.allow_journal_messages(r".*cannot reauthorize identity\(s\): unix-user:.*")
         self.allow_journal_messages("admin: Executing command .*COMMAND=.*cockpit-bridge --privileged.*")
 
-    @testlib.skipBrowser("Firefox needs proper cert and CA", "firefox")
     def testReverseProxy(self):
         m = self.machine
         b = self.browser
@@ -1005,12 +1002,8 @@ until pgrep -f '^(/usr/[^ ]+/[^ /]*python[^ /]* )?/usr/bin/cockpit-bridge'; do s
         b.set_val("#login-password-input", "foobar")
         b.click('#login-button')
 
-        def check_wss_log():
-            for log in self.browser.get_js_log():
-                if 'Error during WebSocket handshake: Unexpected response code: 403' in log:
-                    return True
-            return False
-        testlib.wait(check_wss_log)
+        b.wait_text(".early-failure .pf-v5-c-empty-state__title", "Connection failed")
+        b.wait_in_text(".early-failure ", "unexpected error while connecting to the machine")
 
         testlib.wait(lambda: m.execute("grep 'received request from bad Origin' /var/log/ws-notls.log"))
 
@@ -1293,7 +1286,6 @@ ProtocolHeader = X-Forwarded-Proto
 
     @testlib.skipImage("nginx not installed", "centos-*", "rhel-*", "debian-*", "ubuntu-*", "arch")
     @testlib.skipOstree("nginx not installed")
-    @testlib.skipBrowser("Firefox needs proper cert and CA", "firefox")
     def testNginxTLS(self):
         """test proxying to Cockpit with TLS
 
@@ -1335,11 +1327,14 @@ server {
         m.start_cockpit(tls=True)
         self.checkCockpitOnProxy()
 
+        # avoid crash when stopping the unit: https://bugzilla.redhat.com/show_bug.cgi?id=2304015
+        m.execute("nginx -s stop")
+
         # now test with UrlRoot
         m.write("/etc/cockpit/cockpit.conf", "UrlRoot = cockpit-root\n", append=True)
         m.execute("systemctl stop cockpit.service")
-        self.sed_file("s_location /_location /cockpit-root_", "/etc/nginx/conf.d/cockpit.conf",
-                      "systemctl restart nginx")
+        self.sed_file("s_location /_location /cockpit-root_", "/etc/nginx/conf.d/cockpit.conf")
+        m.execute("systemctl start nginx")
         self.checkCockpitOnProxy(urlroot="/cockpit-root")
 
         # get a non-cockpit file from the server
@@ -1371,7 +1366,6 @@ server {
 
     @testlib.skipImage("nginx not installed", "centos-*", "rhel-*", "debian-*", "ubuntu-*", "arch")
     @testlib.skipOstree("nginx not installed")
-    @testlib.skipBrowser("Firefox needs proper cert and CA", "firefox")
     def testNginxNoTLS(self):
         """test proxying to Cockpit with plain HTTP
 
@@ -1428,10 +1422,13 @@ server {
         self.checkCockpitOnProxy(login=False)
         kill_ws()
 
+        # avoid crash when stopping the unit: https://bugzilla.redhat.com/show_bug.cgi?id=2304015
+        m.execute("nginx -s stop")
+
         # UrlRoot + login page
         m.write("/etc/cockpit/cockpit.conf", "UrlRoot = myroot\n", append=True)
-        self.sed_file("s_location /_location /myroot_", "/etc/nginx/conf.d/cockpit.conf",
-                      "systemctl restart nginx")
+        self.sed_file("s_location /_location /myroot_", "/etc/nginx/conf.d/cockpit.conf")
+        m.execute("systemctl start nginx")
         run_ws()
         self.checkCockpitOnProxy(urlroot="/myroot")
         kill_ws()
