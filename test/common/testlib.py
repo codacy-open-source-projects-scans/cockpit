@@ -13,7 +13,7 @@
 # Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
+# along with Cockpit; If not, see <https://www.gnu.org/licenses/>.
 
 """Tools for writing Cockpit test cases."""
 
@@ -114,6 +114,7 @@ WEBDRIVER_KEYS = {
     "ArrowDown": "\uE015",
     "Insert": "\uE016",
     "Delete": "\uE017",
+    "Meta": "\uE03D",
 }
 
 
@@ -502,7 +503,68 @@ class Browser:
         :param metaKey: press the meta key
         """
         self.wait_visible(selector)
-        self.call_js_func('ph_mouse', selector, event, x, y, btn, ctrlKey, shiftKey, altKey, metaKey)
+
+        # HACK: Chromium clicks don't work with iframes; use our old "synthesize MouseEvent" approach
+        # https://issues.chromium.org/issues/359616812
+        # TODO: x and y are not currently implemented: webdriver (0, 0) is the element's center, not top left corner
+        if self.browser == "chromium" or x != 0 or y != 0:
+            self.call_js_func('ph_mouse', selector, event, x, y, btn, ctrlKey, shiftKey, altKey, metaKey)
+            return
+
+        # For Firefox and regular clicks, use the BiDi API, which is more realistic -- it doesn't
+        # sidestep the browser
+        element = self.call_js_func('ph_find_scroll_into_view', selector)
+
+        # btn=2 for context menus doesn't work with ph_mouse(); so translate the old ph_mouse() API
+        if event == "contextmenu":
+            assert btn == 0, "contextmenu event can only be done with default 'btn' value"
+            btn = 2
+            event = "click"
+
+        actions = [{"type": "pointerMove", "x": 0, "y": 0, "origin": {"type": "element", "element": element}}]
+        down = {"type": "pointerDown", "button": btn}
+        up = {"type": "pointerUp", "button": btn}
+        if event == "click":
+            actions.extend([down, up])
+        elif event == "dblclick":
+            actions.extend([down, up, down, up])
+        elif event == "mouseenter":
+            actions.insert(0, {"type": "pointerMove", "x": 0, "y": 0, "origin": "viewport"})
+        elif event == "mouseleave":
+            actions.append({"type": "pointerMove", "x": 0, "y": 0, "origin": "viewport"})
+        else:
+            raise NotImplementedError(f"unknown event {event}")
+
+        # modifier keys
+        ev_id = f"pointer-{self.driver.last_id}"
+        keys_pre = []
+        keys_post = []
+
+        def key(type_: str, name: str) -> JsonObject:
+            return {"type": "key", "id": ev_id + type_, "actions": [{"type": type_, "value": WEBDRIVER_KEYS[name]}]}
+
+        if altKey:
+            keys_pre.append(key("keyDown", "Alt"))
+            keys_post.append(key("keyUp", "Alt"))
+        if ctrlKey:
+            keys_pre.append(key("keyDown", "Control"))
+            keys_post.append(key("keyUp", "Control"))
+        if shiftKey:
+            keys_pre.append(key("keyDown", "Shift"))
+            keys_post.append(key("keyUp", "Shift"))
+        if metaKey:
+            keys_pre.append(key("keyDown", "Meta"))
+            keys_post.append(key("keyUp", "Meta"))
+
+        # the actual mouse event
+        actions = [{
+            "id": ev_id,
+            "type": "pointer",
+            "parameters": {"pointerType": "mouse"},
+            "actions": actions,
+        }]
+
+        self.bidi("input.performActions", context=self.driver.context, actions=keys_pre + actions + keys_post)
 
     def click(self, selector: str) -> None:
         """Click on a ui element
@@ -596,6 +658,9 @@ class Browser:
     def input_text(self, text: str) -> None:
         actions = []
         for c in text:
+            # quality-of-life special case
+            if c == '\n':
+                c = WEBDRIVER_KEYS["Enter"]
             actions.append({"type": "keyDown", "value": c})
             actions.append({"type": "keyUp", "value": c})
         self.bidi("input.performActions", context=self.driver.context, actions=[
@@ -1009,6 +1074,7 @@ class Browser:
         passwordless: bool | None = False
     ) -> None:
         with self.driver.restore_context():
+            self.switch_to_top()
             self.open_superuser_dialog()
 
             # In (open)SUSE images, superuser access always requires the root password
@@ -1032,6 +1098,7 @@ class Browser:
 
     def drop_superuser(self) -> None:
         with self.driver.restore_context():
+            self.switch_to_top()
             self.open_superuser_dialog()
             self.wait_in_text("div[role=dialog]", "Switch to limited access")
             self.click("div[role=dialog] button.pf-m-primary")
@@ -1139,7 +1206,7 @@ class Browser:
             self.cdp_command("Emulation.setEmulatedMedia", features=[{'name': 'prefers-color-scheme', 'value': name}])
 
     def _set_direction(self, direction: str) -> None:
-        with self.driver.restore_context(switch_to_top=False):
+        with self.driver.restore_context():
             if self.is_present("#shell-page"):
                 self.switch_to_top()
                 self.set_attr("#shell-page", "dir", direction)

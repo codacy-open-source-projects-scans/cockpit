@@ -15,7 +15,7 @@
 # Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
+# along with Cockpit; If not, see <https://www.gnu.org/licenses/>.
 
 import datetime
 import os
@@ -279,6 +279,7 @@ class TestAccounts(testlib.MachineCase):
         # disable password
         performUserAction(b, 'robert', 'Lock account')
         b.click("#account-confirm-lock-dialog footer .pf-m-danger.apply")
+        b.wait_not_present("#account-confirm-lock-dialog")
         # lock option is now disabled
         b.click("#accounts-list tbody tr:contains(robert) button.pf-v5-c-menu-toggle")
         b.wait_in_text(".pf-v5-c-menu__list-item:contains('Lock account').pf-m-disabled", 'Lock account')

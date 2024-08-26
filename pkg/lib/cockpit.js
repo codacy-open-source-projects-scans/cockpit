@@ -14,7 +14,7 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
+ * along with Cockpit; If not, see <https://www.gnu.org/licenses/>.
  */
 
 /* eslint-disable indent,no-empty */
@@ -2277,9 +2277,20 @@ function factory() {
                 }
             });
 
-            iterate_data(file_content, function(data) {
-                replace_channel.send(data);
-            });
+            // null means 'erase this file', which is what will happen if
+            // we send no data. the empty string means "write an empty
+            // file", and in order to do that, we need to explicitly send
+            // an empty frame (or we'll delete the file). iterate_data()
+            // doesn't call us if the string is empty, so we handle it.
+            if (file_content !== null) {
+                if (file_content.length === 0 || file_content.byteLength === 0) {
+                    replace_channel.send(file_content);
+                } else {
+                    iterate_data(file_content, data => {
+                        replace_channel.send(data);
+                    });
+                }
+            }
 
             replace_channel.control({ command: "done" });
             return dfd.promise;

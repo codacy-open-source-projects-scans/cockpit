@@ -29,8 +29,8 @@ jobs:
     targets:
       - fedora-40
       - fedora-41
-      - fedora-latest-aarch64
-      - fedora-development
+      - fedora-latest-stable-aarch64
+      - fedora-rawhide
       - centos-stream-9-x86_64
       - centos-stream-9-aarch64
       - centos-stream-10

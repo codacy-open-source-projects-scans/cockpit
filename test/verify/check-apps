@@ -15,7 +15,7 @@
 # Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
+# along with Cockpit; If not, see <https://www.gnu.org/licenses/>.
 import time
 
 import packagelib
@@ -247,6 +247,7 @@ class TestApps(packagelib.PackageCase):
             b.wait_visible('#display-language-modal')
             b.click(f'#display-language-modal li[data-value={lang}] button')
             b.click("#display-language-modal footer button.pf-m-primary")
+            b.wait_not_present('#display-language-modal')
             b.wait_language(lang)
             b.enter_page("/apps")
 

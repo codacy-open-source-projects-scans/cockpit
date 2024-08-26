@@ -14,7 +14,7 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
+ * along with Cockpit; If not, see <https://www.gnu.org/licenses/>.
  */
 
 import '../lib/patternfly/patternfly-5-cockpit.scss';
@@ -413,7 +413,7 @@ const TextFilter = ({ textFilter, onTextFilterChange, filteredQuery }) => {
                      submitSearchButtonLabel={_("Search")}
                      formAdditionalItems={<Stack hasGutter>
                          <Button variant="link" component="a" isInline
-                                     href="https://www.freedesktop.org/software/systemd/man/journalctl.html"
+                                     href="https://www.freedesktop.org/software/systemd/man/latest/journalctl.html"
                                      icon={<ExternalLinkSquareAltIcon />} iconPosition="right"
                                      target="blank" rel="noopener noreferrer">
                              {_("journalctl manpage")}

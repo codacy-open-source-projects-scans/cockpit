@@ -13,7 +13,7 @@
 # Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
+# along with Cockpit; If not, see <https://www.gnu.org/licenses/>.
 
 import json
 import os.path
@@ -648,7 +648,7 @@ class StorageCase(MachineCase, StorageHelpers):
 
     def setUp(self):
 
-        if self.image in ["fedora-coreos", "rhel4edge"]:
+        if self.image == "fedora-coreos":
             self.skipTest("No udisks/cockpit-storaged on OSTree images")
 
         super().setUp()

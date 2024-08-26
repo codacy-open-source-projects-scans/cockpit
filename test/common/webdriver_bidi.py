@@ -13,7 +13,7 @@
 # Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with Cockpit; If not, see <http://www.gnu.org/licenses/>.
+# along with Cockpit; If not, see <https://www.gnu.org/licenses/>.
 
 """BiDi session/API driver
 
@@ -327,10 +327,8 @@ class WebdriverBidi:
         log_command.info("← switch_to_top")
 
     @contextlib.contextmanager
-    def restore_context(self, *, switch_to_top: bool = True) -> Iterator[None]:
+    def restore_context(self) -> Iterator[None]:
         saved = self.context
-        if switch_to_top:
-            self.switch_to_top()
         try:
             yield
         finally:
@@ -345,7 +343,7 @@ class ChromiumBidi(WebdriverBidi):
     async def start_bidi_session(self) -> None:
         assert self.bidi_session is None
 
-        candidate_binaries = ["/usr/bin/chromium-browser"]
+        candidate_binaries = ["/usr/bin/chromium-browser", "/usr/bin/chromium"]
         if self.headless:
             candidate_binaries.insert(0, "/usr/lib64/chromium-browser/headless_shell")
         binaries = [path for path in candidate_binaries if os.path.exists(path)]
