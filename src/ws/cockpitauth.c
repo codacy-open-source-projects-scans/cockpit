@@ -125,6 +125,9 @@ typedef struct {
   /* An authorize challenge from session */
   JsonObject *authorize;
 
+  /* The failing "init" message from the session */
+  JsonObject *init_failure;
+
   /* The conversation in progress */
   gchar *conversation;
 } CockpitSession;
@@ -155,6 +158,8 @@ cockpit_session_reset (gpointer data)
   cookie = session->cookie;
   session->cookie = NULL;
   self = session->auth;
+
+  g_clear_pointer (&session->init_failure, json_object_unref);
 
   /* No accessing session after this point */
 
@@ -750,6 +755,8 @@ on_transport_control (CockpitTransport *transport,
           if (!cockpit_json_get_string (options, "message", NULL, &message))
             message = NULL;
           propagate_problem_to_error (session, options, problem, message, &error);
+          g_clear_pointer (&session->init_failure, json_object_unref);
+          session->init_failure = json_object_ref (options);
           if (session->login_task == NULL)
             {
               g_message ("ignoring failure from session process: %s", error->message);
@@ -1531,24 +1538,21 @@ cockpit_auth_login_finish (CockpitAuth *self,
                            GHashTable *headers,
                            GError **error)
 {
-  JsonObject *body = NULL;
-  CockpitCreds *creds = NULL;
-  CockpitSession *session = NULL;
-  gboolean force_secure;
-  gchar *cookie_name;
-  gchar *cookie_b64;
-  gchar *header;
-  gchar *id;
+  g_autoptr(JsonObject) body = NULL;
 
   g_return_val_if_fail (g_task_is_valid (result, self), NULL);
 
-  if (!g_task_propagate_boolean (G_TASK (result), error))
-    goto out;
+  CockpitSession *session = g_task_get_task_data (G_TASK (result));
 
-  session = g_task_get_task_data (G_TASK (result));
+  if (!g_task_propagate_boolean (G_TASK (result), error))
+    {
+      if (session != NULL)
+        body = g_steal_pointer (&session->init_failure);
+      goto out;
+    }
+
   g_return_val_if_fail (session != NULL, NULL);
   g_return_val_if_fail (session->login_task == NULL, NULL);
-
   cockpit_session_reset (session);
 
   if (session->authorize)
@@ -1568,32 +1572,36 @@ cockpit_auth_login_finish (CockpitAuth *self,
     {
       /* Start off in the idling state, and begin a timeout during which caller must do something else */
       on_web_service_idling (session->service, session);
-      creds = cockpit_web_service_get_creds (session->service);
+      CockpitCreds *creds = cockpit_web_service_get_creds (session->service);
 
-      id = cockpit_auth_nonce (self);
+      g_autofree gchar *id = cockpit_auth_nonce (self);
       session->cookie = g_strdup_printf ("v=2;k=%s", id);
       g_hash_table_insert (self->sessions, session->cookie, cockpit_session_ref (session));
-      g_free (id);
 
       if (headers)
         {
+          gboolean force_secure;
+
           if (self->flags & COCKPIT_AUTH_FOR_TLS_PROXY)
             force_secure = TRUE;
           else
             force_secure = connection ? !G_IS_SOCKET_CONNECTION (connection) : TRUE;
-          cookie_name = application_cookie_name (cockpit_creds_get_application (creds));
-          cookie_b64 = g_base64_encode ((guint8 *)session->cookie, strlen (session->cookie));
-          header = g_strdup_printf ("%s=%s; Path=/; SameSite=Strict;%s HttpOnly",
-                                    cookie_name, cookie_b64,
-                                    force_secure ? " Secure;" : "");
-          g_free (cookie_b64);
-          g_free (cookie_name);
-          g_hash_table_insert (headers, g_strdup ("Set-Cookie"), header);
+
+          g_autofree gchar *cookie_name = application_cookie_name (cockpit_creds_get_application (creds));
+          g_autofree gchar *cookie_b64 = g_base64_encode ((guint8 *)session->cookie, strlen (session->cookie));
+          g_hash_table_insert (headers, g_strdup ("Set-Cookie"),
+                               g_strdup_printf ("%s=%s; Path=/; SameSite=Strict;%s HttpOnly",
+                                                cookie_name, cookie_b64, force_secure ? " Secure;" : ""));
         }
 
       if (body)
         json_object_unref (body);
       body = cockpit_creds_to_json (creds);
+
+      /* Successful login */
+      g_info ("User %s logged into session %s",
+              cockpit_creds_get_user (creds),
+              cockpit_web_service_get_id (session->service));
     }
   else
     {
@@ -1604,13 +1612,7 @@ cockpit_auth_login_finish (CockpitAuth *self,
 out:
   self->startups--;
 
-  /* Successful login */
-  if (creds)
-    g_info ("User %s logged into session %s",
-            cockpit_creds_get_user (creds),
-            cockpit_web_service_get_id (session->service));
-
-  return body;
+  return g_steal_pointer (&body);
 }
 
 CockpitAuth *

@@ -119,14 +119,15 @@ account    required     pam_succeed_if.so user ingroup %s""" % m.get_admin_group
         self.check_shell()
 
         if not m.ostree_image:  # logs in via ssh, not cockpit-session
-            self.assertRegex(m.execute("who"), r"(^|\n)admin *web.*(\d+\.\d+|::)")
+            # older coreutils shows the session type (web), newer ones the service name
+            self.assertRegex(m.execute("who"), r"(^|\n)admin *(web|cockpit).*(\d+\.\d+|::)")
 
         # reload, which should log us in with the cookie
         b.reload()
         self.check_shell()
 
         if not m.ostree_image:  # logs in via ssh, not cockpit-session
-            self.assertRegex(m.execute("who"), r"(^|\n)admin *web.*(\d+\.\d+|::)")
+            self.assertRegex(m.execute("who"), r"(^|\n)admin *(web|cockpit).*(\d+\.\d+|::)")
 
         b.go("/users#/admin")
         b.enter_page("/users")
@@ -772,7 +773,7 @@ account    required     pam_succeed_if.so user ingroup %s""" % m.get_admin_group
 
         # set up local (NIS) sssd provider and certificate mapping
         # newer sssd drops "file" provider, but the "proxy" provider cannot do this yet in old versions
-        if m.image in ["debian-stable", "ubuntu-2204", "ubuntu-stable"]:
+        if m.image in ["debian-stable", "ubuntu-2204"]:
             id_provider = "id_provider = files"
         else:
             id_provider = """id_provider = proxy
@@ -874,7 +875,7 @@ matchrule = <SUBJECT>^DC=LAN,DC=COCKPIT,CN=alice$
         # another certificate gets rejected
         self.allow_journal_messages("cockpit-session: No matching user for certificate")
         do_test(["--cert", self.vm_tmpdir + "/bob.pem", "--key", self.vm_tmpdir + "/bob.key"],
-                ["HTTP/1.1 401 Authentication failed", '<h1>Authentication failed</h1>'],
+                ["HTTP/1.1 401 Authentication failed"],
                 not_expected=["crsf-token"])
 
         # check expired certificate
@@ -892,7 +893,7 @@ matchrule = <SUBJECT>^DC=LAN,DC=COCKPIT,CN=alice$
         m.write("/etc/cockpit/cockpit.conf", "[Basic]\naction = none\n", append=True)
         do_test(alice_cert_key, ['HTTP/1.1 200 OK', '"csrf-token"'])
         do_test(['-u', 'alice:foobar123'],
-                ['HTTP/1.1 401 Authentication disabled', '<h1>Authentication disabled</h1>'],
+                ['HTTP/1.1 401 Authentication disabled'],
                 not_expected=["crsf-token"])
 
         # wwithout a CA, alice's cert fails
@@ -905,7 +906,7 @@ matchrule = <SUBJECT>^DC=LAN,DC=COCKPIT,CN=alice$
         self.allow_journal_messages("cockpit-session: Failed to map .* Could not activate remote peer.*")
         self.allow_journal_messages("cockpit-session: Failed to map .* Unit sssd-ifp.service is masked.")
         m.execute("systemctl mask sssd-ifp; systemctl stop sssd-ifp")
-        do_test(alice_cert_key, ["HTTP/1.1 401 Authentication failed", '<h1>Authentication failed</h1>'],
+        do_test(alice_cert_key, ["HTTP/1.1 401 Authentication failed"],
                 not_expected=["crsf-token"])
         m.execute("systemctl unmask sssd-ifp")
 
