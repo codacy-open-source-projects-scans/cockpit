@@ -86,8 +86,7 @@ class TestHistoryMetrics(testlib.MachineCase):
         super().setUp()
         # start with a clean slate and avoid running into restart limits
         self.machine.execute("systemctl stop pmlogger pmproxy; systemctl reset-failed pmlogger pmproxy 2>/dev/null || true")
-        # HACK: PF modal can have multiple id's in certain scenario's https://github.com/patternfly/patternfly-react/issues/9399
-        self.pcp_dialog_selector = "#pcp-settings-modal:first-child"
+        self.pcp_dialog_selector = "#pcp-settings-modal"
 
     def waitStream(self, current_max):
         # should only have at most <current_max> valid minutes, the rest should be empty
@@ -714,7 +713,7 @@ class TestHistoryMetrics(testlib.MachineCase):
         checkEnabled(expected=True)
 
     @testlib.nondestructive
-    @testlib.onlyImage("only Fedora 40 and Fedora 39 have both valkey and redis", "fedora-40", "fedora-39")
+    @testlib.onlyImage("only Fedora 40 has both valkey and redis", "fedora-40")
     def testPmProxySettingsRedis(self):
         self.machine.execute("systemctl mask valkey")
         self.addCleanup(self.machine.execute, "systemctl unmask valkey")
@@ -1249,8 +1248,7 @@ BEGIN {{
 
 @testlib.skipImage("TODO: Arch Linux packagekit support", "arch")
 class TestMetricsPackages(packagelib.PackageCase):
-    # HACK: PF modal can have multiple id's in certain scenario's https://github.com/patternfly/patternfly-react/issues/9399
-    pcp_dialog_selector = "#pcp-settings-modal:first-child"
+    pcp_dialog_selector = "#pcp-settings-modal"
 
     def testBasic(self):
         b = self.browser
@@ -1260,7 +1258,7 @@ class TestMetricsPackages(packagelib.PackageCase):
         redis_package = "valkey" if redis_service == "valkey" else "redis"
         extra_packages = ""
         if redis_package == "valkey":
-            if m.image in ["fedora-39", "fedora-40"]:
+            if m.image == "fedora-40":
                 # Older Fedoras have the actual redis installed as
                 # well, and we want to remove that too to trigger the
                 # install dialog.
@@ -1441,9 +1439,7 @@ class TestGrafanaClient(testlib.MachineCase):
         m = self.machine
         b = self.browser
         mg = self.machines['services']
-
-        # HACK: PF modal can have multiple id's in certain scenario's https://github.com/patternfly/patternfly-react/issues/9399
-        pcp_dialog_selector = "#pcp-settings-modal:first-child"
+        pcp_dialog_selector = "#pcp-settings-modal"
 
         # avoid dynamic host name changes during PCP data collection, and start from clean slate
         m.execute("""systemctl stop pmlogger || true
