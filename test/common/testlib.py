@@ -116,6 +116,7 @@ WEBDRIVER_KEYS = {
     "Insert": "\uE016",
     "Delete": "\uE017",
     "Meta": "\uE03D",
+    "F2": "\uE032",
 }
 
 
@@ -1033,7 +1034,7 @@ class Browser:
     ) -> None:
         self.logout()
         if wait_remote_session_machine:
-            wait_remote_session_machine.execute("while pgrep -a cockpit-ssh; do sleep 1; done")
+            wait_remote_session_machine.execute("while pgrep -af '[c]ockpit.beiboot'; do sleep 1; done")
         self.try_login(user=user, password=password, superuser=superuser)
         self.wait_visible('#content')
         if path:
@@ -2016,6 +2017,9 @@ class MachineCase(unittest.TestCase):
         "(direct|pcp-archive): instance name lookup failed:.*",
         "(direct|pcp-archive): couldn't create pcp archive context for.*",
 
+        # PCP Python bridge
+        "cockpit.channels.pcp-ERROR: no such metric: .*",
+
         # timedatex.service shuts down after timeout, runs into race condition with property watching
         ".*org.freedesktop.timedate1: couldn't get all properties.*Error:org.freedesktop.DBus.Error.NoReply.*",
     ]
@@ -2110,7 +2114,6 @@ class MachineCase(unittest.TestCase):
             "_COMM=cockpit-ws",
             "GLIB_DOMAIN=cockpit-ws",
             "GLIB_DOMAIN=cockpit-bridge",
-            "GLIB_DOMAIN=cockpit-ssh",
             "GLIB_DOMAIN=cockpit-pcp"
         ]
 

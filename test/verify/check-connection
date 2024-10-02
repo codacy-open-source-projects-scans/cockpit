@@ -347,6 +347,7 @@ class TestConnection(testlib.MachineCase):
 
         self.allow_journal_messages(".*cockpit-ws.*dumped core.*")
         self.allow_journal_messages(".*Error creating thread: Resource temporarily unavailable.*")
+        self.allow_journal_messages(".*Failed to check for ssh: Failed to fork.*")
 
         # initial instance still works
         self.assertIn("HTTP/1.1 200 OK", m.execute("curl --silent --show-error -k --head https://127.0.0.1:9090"))
@@ -1220,10 +1221,6 @@ UnixPath=/run/cockpit/session
         bridge_names = [b['name'] for b in bridges]
         self.assertGreater(len(bridges), 0)
         self.assertIn('sudo', bridge_names)
-
-        # OStree has no PCP bridge; it's temporarily gone from Debian testing as well
-        if not m.ostree_image and m.image != "debian-testing":
-            self.assertIn(f'{self.libexecdir}/cockpit-pcp', bridge_names)
 
 
 class TestReverseProxy(testlib.MachineCase):

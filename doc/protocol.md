@@ -361,7 +361,7 @@ Example authorize challenge and response messages:
 ```
 
 Authorize messages are used during authentication by authentication
-commands (ei: cockpit-session, cockpit-ssh) to obtain the users credentials
+commands like `cockpit-session` to obtain the users credentials
 from cockpit-ws. An authentication command can send a authorize message
 with a response but no cookie. For example
 
@@ -1037,36 +1037,6 @@ fields:
 
  * "type": If the event was created this contains the type of the new file.
    Will be one of: file, directory, link, special or unknown.
-
-In case of an error, the channel will be closed.  In addition to the
-usual "problem" field, the "close" control message sent by the server
-might have the following additional fields:
-
- * "message": A string in the current locale describing the error.
-
-Payload: fslist1
----------------
-
-A channel of this type lists the files in a directory and will watch
-for further changes.
-
-The following options can be specified in the "open" control message:
-
- * "path": The path name of the directory to watch.  This should be an
-   absolute path.
- * "watch": Boolean, when true the directory will be watched and signal
-    on changes. Defaults to "true"
-
-The channel will send a number of JSON messages that list the current
-content of the directory.  These messages have a "event" field with
-value "present", a "path" field that holds the (relative) name of
-the file, "owner", "group", "size" and "modified" (timestamp) fields with
-some basic file information, and a "type" field. Type will be one of:
-file, directory, link, special or unknown. After all files have been listed the
-"ready" control message will be sent.
-
-Other messages on the stream signal changes to the directory, in the
-same format as used by the "fswatch1" payload type.
 
 In case of an error, the channel will be closed.  In addition to the
 usual "problem" field, the "close" control message sent by the server
