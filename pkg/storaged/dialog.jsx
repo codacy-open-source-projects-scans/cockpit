@@ -243,7 +243,7 @@ import { FormHelper } from "cockpit-components-form-helper";
 
 import {
     decode_filename, fmt_size, block_name, format_size_and_text, format_delay, for_each_async, get_byte_units,
-    is_available_block
+    is_available_block, BTRFS_TOOL_MOUNT_PATH
 } from "./utils.js";
 import { fmt_to_fragments } from "utils.jsx";
 import client from "./client.js";
@@ -261,8 +261,8 @@ function is_visible(field, values) {
     return !field.options || field.options.visible == undefined || field.options.visible(values);
 }
 
-const Row = ({ field, values, errors, onChange }) => {
-    const { tag, title, options } = field;
+const Field = ({ field, values, errors, onChange }) => {
+    const { tag, options } = field;
 
     if (!is_visible(field, values))
         return null;
@@ -276,10 +276,31 @@ const Row = ({ field, values, errors, onChange }) => {
         onChange(tag);
     }
 
-    const field_elts = field.render(values[tag], change, validated, error);
-    const nested_elts = (options && options.nested_fields
-        ? make_rows(options.nested_fields, values, errors, onChange)
-        : []);
+    return (
+        <>
+            {field.render(values[tag], change, validated, error)}
+            <FormHelper helperText={explanation} helperTextInvalid={validated && error} />
+        </>);
+};
+
+const Row = ({ field, values, errors, onChange }) => {
+    const { title, options } = field;
+
+    if (!is_visible(field, values))
+        return null;
+
+    const field_elts = <Field field={field} values={values} errors={errors} onChange={onChange} />;
+    let nested_elts = [];
+    if (options && options.nested_fields) {
+        if (field.is_group)
+            nested_elts = options.nested_fields.map(f => <Field key={f.tag}
+                                                                field={f}
+                                                                values={values}
+                                                                errors={errors}
+                                                                onChange={onChange} />);
+        else
+            nested_elts = make_rows(options.nested_fields, values, errors, onChange);
+    }
 
     if (title || title == "") {
         let titleLabel = title;
@@ -295,15 +316,13 @@ const Row = ({ field, values, errors, onChange }) => {
             <FormGroup label={titleLabel} hasNoPaddingTop={field.hasNoPaddingTop}>
                 { field_elts }
                 { nested_elts }
-                <FormHelper helperText={explanation} helperTextInvalid={validated && error} />
             </FormGroup>
         );
     } else if (!field.bare) {
         return (
-            <FormGroup validated={validated} hasNoPaddingTop={field.hasNoPaddingTop}>
+            <FormGroup hasNoPaddingTop={field.hasNoPaddingTop}>
                 { field_elts }
                 { nested_elts }
-                <FormHelper helperText={explanation} helperTextInvalid={validated && error} />
             </FormGroup>
         );
     } else
@@ -1135,6 +1154,18 @@ export const SizeSlider = (tag, title, options) => {
     };
 };
 
+export const Group = (title, fields) => {
+    return {
+        tag: null,
+        title,
+        is_group: true,
+        hasNoPaddingTop: true,
+        options: { nested_fields: fields },
+
+        render: (val, change) => null,
+    };
+};
+
 export const BlockingMessage = (usage) => {
     const usage_desc = {
         pvol: _("physical volume of LVM2 volume group"),
@@ -1245,6 +1276,14 @@ export const TeardownMessage = (usage, expect_single_unmount) => {
         if (use.block) {
             const name = teardown_block_name(use);
             let location = use.location;
+
+            /* Don't show mount points used internally by Cockpit.
+             * It's fine to tear them down, but we don't want people
+             * to start worrying about them.
+             */
+            if (location && location.startsWith(BTRFS_TOOL_MOUNT_PATH))
+                return;
+
             if (use.usage == "mounted") {
                 location = client.strip_mount_point_prefix(location);
                 if (location === false)
@@ -1262,6 +1301,9 @@ export const TeardownMessage = (usage, expect_single_unmount) => {
             });
         }
     });
+
+    if (rows.length == 0)
+        return null;
 
     return (
         <div className="modal-footer-teardown">

@@ -14,27 +14,10 @@ Files: *
 Copyright: 2013-2016  Red Hat, Inc.
 License: LGPL-2.1-or-later
 
-Files: src/common/cockpitunixsignal.c
-Copyright: Copyright (c) 1988, 1993, 1994 The Regents of the University of California
- Portions Copyright (C) 2014 Red Hat, Inc.
- Copyright (C) 2014 Sami Kerola <kerolasa@iki.fi>
- Copyright (C) 2014 Karel Zak <kzak@redhat.com>
-License: BSD-4-clause
-
 Files: src/common/cockpitbase64.*
 Copyright: Copyright (c) 1996, 1998 by Internet Software Consortium
  Portions Copyright (c) 1995 by International Business Machines, Inc.
 License: MIT-IBM-immunity
-
-Files: src/bridge/cockpitpcpmetrics.c
-Copyright: Copyright (c) 2014 Red Hat.
- Copyright (c) 1995 Silicon Graphics, Inc.
-License: LGPL-2.1-or-later
-
-Files: src/bridge/mock-pmda.c
-Copyright: Copyright (c) 2014 - 2016 Red Hat
- Copyright (c) 1995,2004 Silicon Graphics, Inc.  All Rights Reserved.
-License: GPL-2+
 
 Files: tools/install-sh
 Copyright: Copyright (C) 1994 X Consortium

@@ -405,9 +405,14 @@ async def test_internal_metrics(transport: MockTransport) -> None:
     # cpu.core.user instances should be the same as meta sent instances
     assert instances == len(data[0][0])
     # all instances should be False, as this is a rate
-    assert not all(d for d in data[0][0])
+    assert all(d is False for d in data[0][0])
     # memory.used should be an integer
     assert isinstance(data[0][1], int)
+
+    # next data for rate should not be False
+    _, data = await transport.next_frame()
+    data = json.loads(data)
+    assert all(d is not False for d in data[0][0])
 
 
 @pytest.mark.asyncio

@@ -168,6 +168,8 @@ const CURRENT_METRICS = [
     { name: "cpu.core.nice", derive: "rate" },
     { name: "disk.dev.read", units: "bytes", derive: "rate" },
     { name: "disk.dev.written", units: "bytes", derive: "rate" },
+    { name: "mount.total", units: "bytes" },
+    { name: "mount.used", units: "bytes" },
 ];
 
 const CPU_TEMPERATURE_METRICS = [
@@ -238,6 +240,18 @@ function make_rows(rows, rowProps, columnLabels) {
     );
 }
 
+async function get_pcp_packages() {
+    const os_release = await read_os_release();
+    const pcp_packages = ["pcp"];
+
+    // PCP contains the Python module on Arch Linux, for all other distro's it is split up.
+    if (os_release.ID !== "arch") {
+        pcp_packages.push("python3-pcp");
+    }
+
+    return pcp_packages;
+}
+
 class CurrentMetrics extends React.Component {
     constructor(props) {
         super(props);
@@ -282,14 +296,10 @@ class CurrentMetrics extends React.Component {
         this.onMetricsUpdate = this.onMetricsUpdate.bind(this);
         this.onTemperatureUpdate = this.onTemperatureUpdate.bind(this);
         this.onPrivilegedMetricsUpdate = this.onPrivilegedMetricsUpdate.bind(this);
-        this.updateMounts = this.updateMounts.bind(this);
         this.updateLoad = this.updateLoad.bind(this);
 
         cockpit.addEventListener("visibilitychange", this.onVisibilityChange);
         this.onVisibilityChange();
-
-        // regularly update info about filesystems
-        this.updateMounts();
 
         // there is no internal metrics channel for load yet; see https://github.com/cockpit-project/cockpit/pull/14510
         this.updateLoad();
@@ -337,71 +347,6 @@ class CurrentMetrics extends React.Component {
             this.metrics_channel = cockpit.channel({ payload: "metrics1", source: "internal", interval: INTERVAL, metrics: CURRENT_METRICS });
             this.metrics_channel.addEventListener("message", this.onMetricsUpdate);
         }
-    }
-
-    /* Return Set of mount points which should not be shown in Disks card */
-    hideMounts(procMounts) {
-        const result = new Set();
-        procMounts.trim().split("\n")
-                .forEach(line => {
-                    // looks like this: /dev/loop1 /var/mnt iso9660 ro,relatime,nojoliet,check=s,map=n,blocksize=2048 0 0
-                    const fields = line.split(' ');
-                    const options = fields[3].split(',');
-
-                    /* hide read-only loop mounts; these are often things like snaps or iso images
-                     * which are always at 100% capacity, but are uninteresting for disk usage alerts */
-                    if ((fields[0].indexOf("/loop") >= 0 && options.indexOf('ro') >= 0))
-                        result.add(fields[1]);
-                    /* hide flatpaks */
-                    if ((fields[0].indexOf('revokefs-fuse') >= 0 && fields[1].indexOf('flatpak') >= 0))
-                        result.add(fields[1]);
-                });
-        return result;
-    }
-
-    updateMounts() {
-        Promise.all([
-            /* df often exits with non-zero if it encounters any filesystem it can't read;
-               but that's fine, get info about all the others */
-            cockpit.script("df --local --exclude-type=tmpfs --exclude-type=devtmpfs --block-size=1 --output=target,size,avail,pcent || true",
-                           { err: "message" }),
-            cockpit.file("/proc/mounts").read()
-        ])
-                .then(([df_out, mounts_out]) => {
-                    const hide = this.hideMounts(mounts_out);
-
-                    // skip first line with the headings
-                    const mounts = [];
-                    df_out.trim()
-                            .split("\n")
-                            .slice(1)
-                            .forEach(s => {
-                                const fields = s.split(/ +/);
-                                if (fields.length != 4) {
-                                    console.warn("Invalid line in df:", s);
-                                    return;
-                                }
-
-                                if (hide.has(fields[0]))
-                                    return;
-                                mounts.push({
-                                    target: fields[0],
-                                    size: Number(fields[1]),
-                                    avail: Number(fields[2]),
-                                    use: Number(fields[3].slice(0, -1)), /* strip off '%' */
-                                });
-                            });
-
-                    debug("df parsing done:", JSON.stringify(mounts));
-                    this.setState({ mounts });
-
-                    // update it again regularly
-                    window.setTimeout(this.updateMounts, 10000);
-                })
-                .catch(ex => {
-                    console.warn("Failed to run df or read /proc/mounts:", ex.toString());
-                    this.setState({ mounts: [] });
-                });
     }
 
     updateLoad() {
@@ -465,6 +410,8 @@ class CurrentMetrics extends React.Component {
             this.cgroupMemoryNames = data.metrics[10].instances.slice();
             console.assert(data.metrics[14].name === 'disk.dev.read');
             this.disksNames = data.metrics[14].instances.slice();
+            console.assert(data.metrics[16].name === 'mount.total');
+            this.mountPoints = data.metrics[16].instances.slice();
             debug("metrics message was meta, new net instance names", JSON.stringify(this.netInterfacesNames));
             return;
         }
@@ -548,6 +495,18 @@ class CurrentMetrics extends React.Component {
         if (notMappedContainers.length !== 0) {
             this.update_podman_name_mapping(notMappedContainers);
         }
+
+        const mountsTotal = this.samples[16];
+        const mountsUsed = this.samples[17];
+        newState.mounts = mountsTotal.map((mountTotal, i) => {
+            return {
+                target: this.mountPoints[i],
+                size: mountTotal,
+                avail: mountTotal - mountsUsed[i],
+                use: Math.round(mountsUsed[i] / mountTotal * 100),
+            };
+        });
+
         this.setState(newState);
     }
 
@@ -1381,8 +1340,11 @@ const PCPConfigDialog = ({
     const handleInstall = async () => {
     // when enabling services, install missing packages on demand
         const missing = [];
-        if (dialogLoggerValue && !s_pmlogger.exists)
-            missing.push("cockpit-pcp");
+        let pcp_missing = false;
+        if (dialogLoggerValue && !s_pmlogger.exists) {
+            missing.push(...await get_pcp_packages());
+            pcp_missing = true;
+        }
         const redisExists = () => s_redis.exists || s_redis_server.exists || s_valkey.exists;
         if (dialogProxyValue && !redisExists()) {
             const os_release = await read_os_release();
@@ -1395,7 +1357,7 @@ const PCPConfigDialog = ({
             Dialogs.close();
             await install_dialog(missing);
             debug("PCPConfig: package installation successful");
-            if (missing.indexOf("cockpit-pcp") >= 0)
+            if (pcp_missing)
                 setNeedsLogout(true);
             await wait_cond(() => (s_pmlogger.exists &&
                                    (!dialogProxyValue || (s_pmproxy.exists && redisExists()))),
@@ -1595,6 +1557,7 @@ class MetricsHistory extends React.Component {
             selectedDate: null,
             packagekitExists: false,
             isBeibootBridge: false,
+            isPythonPCPInstalled: null,
             selectedVisibility: this.columns.reduce((a, v) => ({ ...a, [v[0]]: true }), {})
         };
 
@@ -1686,8 +1649,8 @@ class MetricsHistory extends React.Component {
         }, () => this.load_data(sel, sel === this.today_midnight ? undefined : 24 * SAMPLES_PER_H, true));
     }
 
-    handleInstall() {
-        install_dialog("cockpit-pcp")
+    async handleInstall() {
+        install_dialog(await get_pcp_packages())
                 .then(() => this.props.setNeedsLogout(true))
                 .catch(() => null); // ignore cancel
     }
@@ -1789,8 +1752,10 @@ class MetricsHistory extends React.Component {
                 this.setState({
                     loading: false,
                     metricsAvailable: false,
+                    isPythonPCPInstalled: message?.message !== "python3-pcp not installed",
                 });
             } else {
+                this.setState({ isPythonPCPInstalled: true });
                 debug("loaded metrics for timestamp", timeformat.dateTime(load_timestamp), "new hours", JSON.stringify(Array.from(new_hours)));
                 new_hours.forEach(hour => debug("hour", hour, "data", JSON.stringify(this.data[hour])));
 
@@ -1824,14 +1789,11 @@ class MetricsHistory extends React.Component {
 
         // on a single machine, cockpit-pcp depends on pcp; but this may not be the case in the beiboot scenario,
         // so additionally check if pcp is available on the logged in target machine
-        if ((cockpit.manifests && !cockpit.manifests.pcp) || this.pmlogger_service.exists === false)
+        if (this.state.isPythonPCPInstalled === false || this.pmlogger_service.exists === false)
             return <EmptyStatePanel
                         icon={ExclamationCircleIcon}
-                        title={_("Package cockpit-pcp is missing for metrics history")}
-                        action={this.state.isBeibootBridge === true
-                            // See https://github.com/cockpit-project/cockpit/issues/19143
-                            ? <Text>{ _("Installation not supported without installed cockpit package") }</Text>
-                            : this.state.packagekitExists && <Button onClick={this.handleInstall}>{_("Install cockpit-pcp")}</Button>}
+                        title={_("PCP is missing for metrics history")}
+                        action={this.state.packagekitExists && <Button onClick={this.handleInstall}>{_("Install PCP support")}</Button>}
             />;
 
         if (!this.state.metricsAvailable) {
