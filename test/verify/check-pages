@@ -191,6 +191,10 @@ OnCalendar=daily
         b.click("#display-language-modal footer button.pf-m-primary")
         b.wait_language("de-de")
 
+        # Wait for the shell to be fully loaded again so that b.go()
+        # starts working.
+        b.enter_page("/metrics")
+
         # Check that the system page is translated
         b.go("/system")
         b.enter_page("/system")
@@ -395,23 +399,30 @@ OnCalendar=daily
 
     def testFrameReload(self):
         b = self.browser
+        m = self.machine
+
         frame = "cockpit1:localhost/playground/test"
         self.addCleanup(self.machine.execute, "rm -f /tmp/counter")
 
         self.login_and_go("/playground/test")
 
-        b.wait_text('#file-content', "0")
-        b.click("#modify-file")
-        b.wait_text('#file-content', "1")
+        # Check that channels are closed when a frame is reloaded.
 
+        # Lock a file, that keeps a channel open.
+        m.execute("touch /tmp/playground-test-lock")
+        b.click(".lock-channel button")
+        b.wait_in_text(".lock-channel span", 'locked')
+        m.execute("! flock --nonblock /tmp/playground-test-lock true")
+
+        # Now reload the frame by kicking its "src" attribute.
         b.switch_to_top()
-        b.eval_js('ph_set_attr("iframe[name=\'%s\']", "data-ready", null)' % frame)
         b.eval_js('ph_set_attr("iframe[name=\'%s\']", "src", "../playground/test.html?i=1#/")' % frame)
-        b.wait_visible(f"iframe.container-frame[name='{frame}'][data-ready]")
+
+        # The channel and the lock should have gone away
+        m.execute("flock --timeout 10 /tmp/playground-test-lock true")
 
         b.enter_page("/playground/test")
-
-        b.wait_text('#file-content', "1")
+        b.wait_not_in_text(".lock-channel span", 'locked')
 
         self.allow_restart_journal_messages()
 
@@ -434,9 +445,6 @@ OnCalendar=daily
 
         # On Ubuntu and Debian we would need to generate locales - just ignore it
         self.allow_journal_messages("invalid or unusable locale: de_DE.UTF-8")
-
-        # Clean up failed services for screenshots
-        m.execute("systemctl reset-failed")
 
         self.login_and_go()
 
@@ -469,7 +477,10 @@ OnCalendar=daily
         b.wait_text("#host-apps li a:contains('Services')", "ServicesContains: systemd")
         b.wait_text("#host-apps li a:contains('Services') mark", "systemd")
 
+        # Clean up failed services for screenshots
+        m.execute("systemctl reset-failed")
         b.wait_not_present("#services-error")
+
         b.assert_pixels("#nav-system", "menu-search", skip_layouts=["mobile"])
         b.set_layout("mobile")
         b.click("#nav-system-item")
@@ -542,6 +553,11 @@ OnCalendar=daily
         b.click('#display-language-modal li[data-value=de-de] button')
         b.click("#display-language-modal footer button.pf-m-primary")
         b.wait_language("de-de")
+
+        # Wait for the shell to be fully loaded again so that b.go()
+        # starts working.
+        b.enter_page("/network/firewall")
+
         b.go("/system")
         b.enter_page("/system")
         b.wait_in_text(".ct-overview-header", "Neustart")

@@ -1,5 +1,7 @@
 #!/usr/bin/make -f
 
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 # we need an apparmor profile for >= 4.0; this exists in Ubuntu >= 24.04, but not in Debian yet
@@ -51,11 +53,14 @@ override_dh_install:
 	# handled by package maintainer scripts
 	rm debian/tmp/etc/motd.d/cockpit debian/tmp/etc/issue.d/cockpit.issue
 
+	# already processed into debian/copyright
+	rm -r debian/tmp/usr/share/doc/cockpit/legal
+
 	# unpackaged modules
 	rm -r debian/tmp/usr/share/cockpit/kdump
-	rm debian/tmp/usr/share/metainfo/org.cockpit-project.cockpit-kdump.metainfo.xml
+	rm debian/tmp/usr/share/metainfo/org.cockpit_project.cockpit_kdump.metainfo.xml
 	rm -r debian/tmp/usr/share/cockpit/selinux
-	rm debian/tmp/usr/share/metainfo/org.cockpit-project.cockpit-selinux.metainfo.xml
+	rm debian/tmp/usr/share/metainfo/org.cockpit_project.cockpit_selinux.metainfo.xml
 
 	dh_install -Xusr/src/debug
 	# we don't need this, it contains full build paths and breaks reproducibility
