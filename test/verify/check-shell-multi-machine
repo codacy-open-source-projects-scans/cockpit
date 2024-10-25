@@ -117,7 +117,6 @@ def change_ssh_port(machine, address, sshd_socket, sshd_service, port=None, time
     raise error
 
 
-@testlib.todoPybridgeRHEL8()
 class TestMultiMachineAdd(testlib.MachineCase):
     provision = {
         "machine1": {"address": "10.111.113.1/20", "memory_mb": 660},
@@ -328,7 +327,8 @@ class TestMultiMachine(testlib.MachineCase):
         b.wait_visible("#user-group")
         b.wait_visible("#option-group")
         b.wait_visible("#server-group")
-        b.wait_in_text("#login-error-message", "Hostkey does not match")
+        b.wait_text("#login-error-title", "Refusing to connect")
+        b.wait_text("#login-error-message", "Hostkey does not match")
 
         # Clear bad host key in /etc and set bad host key in
         # localStorage.
@@ -355,6 +355,26 @@ class TestMultiMachine(testlib.MachineCase):
         b.wait_in_text(hostname_selector, "machine2")
         b.logout()
 
+        # beiboot mode: same OS → compatible, supported
+        break_bridge(m2)
+        b.try_login(password="alt-password")
+        b.wait_visible('#content')
+        b.logout()
+
+        # beiboot mode: future OS version → incompatible, not supported
+        # rolling OSes don't have a VERSION_ID
+        if m.image not in ["arch", "debian-testing"]:
+            m2.execute("sed -i '/^VERSION_ID/ s/$/1/' /etc/os-release")
+            b.try_login(password="alt-password")
+            source_os = m.execute('. /etc/os-release; echo "$NAME $VERSION_ID"').strip()
+            b.wait_text('#login-error-title', "Packageless session unavailable")
+            b.wait_in_text('#login-error-message', "Transient packageless sessions")
+            b.wait_in_text('#login-error-message', source_os)
+            b.wait_in_text('#login-error-message', "Install the cockpit-system package")
+            b.wait_in_text('#login-error-message', "on 10.111.113.2")
+
+        fix_bridge(m2)
+
         login_options = '#show-other-login-options'
 
         # Connect to bad machine
@@ -368,7 +388,8 @@ class TestMultiMachine(testlib.MachineCase):
         b.wait_not_visible("#server-group")
         b.click('#login-button')
         b.wait_visible("#server-group")
-        b.wait_in_text("#login-error-message", "Refusing to connect")
+        b.wait_text("#login-error-title", "Refusing to connect")
+        b.wait_text("#login-error-message", "Host is unknown")
 
         # Might happen when we switch away.
         self.allow_hostkey_messages()
@@ -411,7 +432,6 @@ class TestMultiMachine(testlib.MachineCase):
         self.assertEqual(200, http_code("/cockpit/@localhost/manifests.json"))
         self.assertEqual(403, http_code("/cockpit/@10.111.113.2/manifests.json"))
 
-    @testlib.todoPybridgeRHEL8()
     def testUrlRoot(self):
         b = self.browser
         m = self.machine
@@ -473,7 +493,6 @@ class TestMultiMachine(testlib.MachineCase):
         b.switch_to_top()
         b.wait_js_cond('window.location.pathname == "/cockpit-new/system"')
 
-    @testlib.todoPybridgeRHEL8()
     def testExternalPage(self):
         b = self.browser
         m1 = self.machine
@@ -505,7 +524,6 @@ class TestMultiMachine(testlib.MachineCase):
 
         self.allow_hostkey_messages()
 
-    @testlib.todoPybridgeRHEL8()
     def testFrameNavigation(self):
         b = self.browser
         m2 = self.machine2
@@ -586,7 +604,6 @@ class TestMultiMachine(testlib.MachineCase):
                                     ".*: bridge program failed: Child process exited with code .*",
                                     "/playground/test.html: failed to retrieve resource: authentication-failed")
 
-    @testlib.todoPybridgeRHEL8()
     def testFrameReload(self):
         b = self.browser
         m2 = self.machines["machine2"]
@@ -631,7 +648,6 @@ class TestMultiMachine(testlib.MachineCase):
 
         self.allow_hostkey_messages()
 
-    @testlib.todoPybridgeRHEL8()
     def testTroubleshooting(self):
         b = self.browser
         m1 = self.machine
@@ -779,7 +795,6 @@ class TestMultiMachine(testlib.MachineCase):
                                     '.*: server offered unsupported authentication methods: .*')
 
     @testlib.skipImage("TODO: Broken on Arch Linux", "arch")
-    @testlib.todoPybridgeRHEL8()
     def testSshKeySetup(self):
         b = self.browser
         m1 = self.machine
@@ -872,7 +887,6 @@ class TestMultiMachine(testlib.MachineCase):
 
         self.allow_hostkey_messages()
 
-    @testlib.todoPybridgeRHEL8()
     def testSshKeySetupCustom(self):
         b = self.browser
         m1 = self.machine
