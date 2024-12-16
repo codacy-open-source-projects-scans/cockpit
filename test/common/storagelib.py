@@ -131,6 +131,10 @@ class StorageHelpers:
 
         self.addCleanup(self.machine.execute, f"if [ -d /dev/{vgname} ]; then vgremove --force {vgname}; fi")
 
+    def addCleanupMount(self, mount_point):
+        self.addCleanup(self.machine.execute,
+                        f"if mountpoint -q {mount_point}; then umount {mount_point}; fi")
+
     # Dialogs
 
     def dialog_wait_open(self):
@@ -186,8 +190,8 @@ class StorageHelpers:
                 self.browser.set_checked(sel + " input[type=checkbox]", val=True)
                 self.browser.set_input_text(sel + " [type=text]", val)
         elif ftype == "combobox":
-            self.browser.click(sel + " button.pf-v5-c-select__toggle-button")
-            self.browser.click(sel + f" .pf-v5-c-select__menu li:contains('{val}') button")
+            self.browser.click(sel + " button.pf-v5-c-menu-toggle__button")
+            self.browser.click(sel + f" .pf-v5-c-menu li:contains('{val}') button")
         else:
             self.browser.set_val(sel, val)
 
@@ -656,7 +660,7 @@ class StorageCase(MachineCase, StorageHelpers):
         super().setUp()
 
         ver = self.machine.execute("busctl --system get-property org.freedesktop.UDisks2 /org/freedesktop/UDisks2/Manager org.freedesktop.UDisks2.Manager Version || true")
-        m = re.match('s "(.*)"', ver)
+        m = re.match(r's "(.*)"', ver)
         if m:
             self.storaged_version = list(map(int, m.group(1).split(".")))
         else:

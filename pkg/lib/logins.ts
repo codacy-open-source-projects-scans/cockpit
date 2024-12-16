@@ -17,26 +17,21 @@
  * along with Cockpit; If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* This is our version of the PatternFly Truncate component. We have
-   it since we don't want Patternfly's unconditional tooltip.
+import * as python from "python";
 
-   Truncation in the middle doesn't work with Patternsfly's approach
-   in mixed RTL/LTR environments, so we only offer truncation at the
-   end.
- */
+// @ts-expect-error TS2307 this isn't a TS module, just a magic esbuild "text" import rule
+import lastlog2_py from "./lastlog2.py";
 
-import * as React from "react";
-import './cockpit-components-truncate.scss';
-
-export const Truncate = ({
-    content,
-    ...props
-}) => {
-    return (
-        <span className="pf-v5-c-truncate ct-no-truncate-min-width" {...props}>
-            <span className="pf-v5-c-truncate__start">
-                {content}
-            </span>
-        </span>
-    );
+export type LastlogEntry = {
+    time: number;
+    tty: string;
+    host: string;
 };
+
+/* Return lastlog2 database as { username → LastLogin } object.
+ * Throws an exception if the db does not exist, i.e. the system isn't using lastlog2.
+*/
+export async function getLastlog2(user?: string): Promise<Record<string, LastlogEntry>> {
+    const out = await python.spawn(lastlog2_py, user ? [user] : [], { err: "message" });
+    return JSON.parse(out);
+}

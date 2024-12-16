@@ -52,7 +52,8 @@ class TestUpdates(NoSubManCase):
         super().setUp()
 
         # apt does not support severity enhancement metadata
-        self.supports_severity = self.backend != "apt"
+        # only PackageKit ≥ 1.2.4 dnf (https://github.com/PackageKit/PackageKit/issues/268) supports severity
+        self.supports_severity = (self.backend != "apt") and (not self.machine.image.startswith("rhel-8"))
 
         if self.supports_severity:
             self.enhancement_severity = "enhancement"
@@ -498,13 +499,13 @@ ExecStart=/usr/local/bin/{self.packageName}
                         b.wait_visible("#shutdown-dialog")
                         b.click("#delay")
                         b.click("button:contains('No delay')")
-                        b.wait_text("#delay .pf-v5-c-select__toggle-text", "No delay")
+                        b.wait_text("#delay .pf-v5-c-menu-toggle__text", "No delay")
                         b.click("#shutdown-dialog button:contains('Reboot')")
                         b.switch_to_top()
                         b.wait_in_text(".curtains-ct h1", "Disconnected")
 
                         # ensure that rebooting actually worked
-                        m.wait_reboot()
+                        self.testObj.wait_reboot()
                         self.testObj.login_and_go("/updates")
                     else:
                         b.wait_in_text("#status", "1 service needs to be restarted")
@@ -523,13 +524,13 @@ ExecStart=/usr/local/bin/{self.packageName}
                         b.wait_visible("#shutdown-dialog")
                         b.click("#delay")
                         b.click("button:contains('No delay')")
-                        b.wait_text("#delay .pf-v5-c-select__toggle-text", "No delay")
+                        b.wait_text("#delay .pf-v5-c-menu-toggle__text", "No delay")
                         b.click("#shutdown-dialog button:contains('Reboot')")
                         b.switch_to_top()
                         b.wait_in_text(".curtains-ct h1", "Disconnected")
 
                         # ensure that rebooting actually worked
-                        m.wait_reboot()
+                        self.testObj.wait_reboot()
                         self.testObj.login_and_go("/updates")
                     else:
                         # update required a service restart
@@ -795,19 +796,19 @@ ExecStart=/usr/local/bin/{packageName}
         b.click(".pf-v5-c-expandable-section__toggle")
         self.assertHistory(".pf-v5-c-expandable-section ul", ["buggy", "norefs-bin", "norefs-doc"])
 
-        if m.image in OSesWithoutTracer:
+        if any(fnmatch.fnmatch(m.image, img) for img in OSesWithoutTracer):
             # do the reboot; this will disconnect the web UI
             b.click("#app .pf-v5-c-empty-state button.pf-m-primary")
             b.wait_visible("#shutdown-dialog")
             b.click("#delay")
             b.click("button:contains('No delay')")
-            b.wait_text("#delay .pf-v5-c-select__toggle-text", "No delay")
+            b.wait_text("#delay .pf-v5-c-menu-toggle__text", "No delay")
             b.click("#shutdown-dialog button:contains('Reboot')")
             b.switch_to_top()
             b.wait_in_text(".curtains-ct h1", "Disconnected")
 
             # ensure that rebooting actually worked
-            m.wait_reboot()
+            self.wait_reboot()
             self.login_and_go("/updates")
         else:
             b.click("#ignore")
@@ -957,8 +958,7 @@ ExecStart=/usr/local/bin/{packageName}
         # reboots automatically
         b.switch_to_top()
         b.wait_in_text(".curtains-ct h1", "Disconnected")
-        m.wait_reboot()
-        self.allow_restart_journal_messages()
+        self.wait_reboot()
 
     @testlib.nondestructive
     def testUpdateError(self):
@@ -1046,7 +1046,9 @@ ExecStart=/usr/local/bin/{packageName}
                            mv /usr/share/dbus-1/system-services/org.freedesktop.PackageKit.service.disabled /usr/share/dbus-1/system-services/org.freedesktop.PackageKit.service
                            systemctl daemon-reload""")
 
-        self.assertNotIn("\nupdates", m.execute("cockpit-bridge --packages"))
+        # no bridge in beiboot mode
+        if not testlib.isBeibootLogin():
+            self.assertNotIn("\nupdates", m.execute("cockpit-bridge --packages"))
         # should not appear in the menu at all
         self.login_and_go(None)
         b.wait_in_text("#host-apps .pf-m-current", "Overview")
@@ -1097,7 +1099,7 @@ ExecStart=/usr/local/bin/{packageName}
 
 
 @testlib.skipImage("TODO: Arch Linux has no cockpit-ws package, it's in cockpit", "arch")
-@testlib.skipOstree("Image uses OSTree")
+@testlib.skipWsContainer("no cockpit-ws package with cockpit/ws container")
 class TestWsUpdate(NoSubManCase):
     def testBasic(self):
         # The main case for this is that cockpit-ws itself gets upgraded, which
@@ -1202,6 +1204,7 @@ class TestKpatchInstall(NoSubManCase):
 
 
 @testlib.onlyImage("No subscriptions", "rhel-*")
+@testlib.skipBeiboot("sub-man-cockpit not contained in cockpit/ws")
 class TestUpdatesSubscriptions(packagelib.PackageCase):
     provision = {
         "0": {"address": "10.111.112.1/20", "dns": "10.111.112.1", "memory_mb": 512},
@@ -1422,19 +1425,19 @@ class TestAutoUpdates(NoSubManCase):
             else:
                 raise NotImplementedError(self.backend)
 
-        def assertTypeDnf(_type):
-            if _type == "all":
+        def assertTypeDnf(type_):
+            if type_ == "all":
                 match = '= default'
-            elif _type == "security":
+            elif type_ == "security":
                 match = '= security'
             else:
-                raise ValueError(_type)
+                raise ValueError(type_)
 
             self.assertIn(match, m.execute(f"grep upgrade_type {self.config}"))
 
-        def assertType(_type):
+        def assertType(type_):
             if "dnf" in self.backend:
-                assertTypeDnf(_type)
+                assertTypeDnf(type_)
             else:
                 raise NotImplementedError(self.backend)
 

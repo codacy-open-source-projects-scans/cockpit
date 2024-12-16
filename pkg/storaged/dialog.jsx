@@ -225,7 +225,6 @@ import { DataList, DataListCell, DataListCheck, DataListItem, DataListItemCells,
 import { Form, FormGroup } from "@patternfly/react-core/dist/esm/components/Form/index.js";
 import { Grid, GridItem } from "@patternfly/react-core/dist/esm/layouts/Grid/index.js";
 import { Radio } from "@patternfly/react-core/dist/esm/components/Radio/index.js";
-import { Select as TypeAheadSelect, SelectOption } from "@patternfly/react-core/dist/esm/deprecated/components/Select/index.js";
 import { Slider } from "@patternfly/react-core/dist/esm/components/Slider/index.js";
 import { Spinner } from "@patternfly/react-core/dist/esm/components/Spinner/index.js";
 import { Split } from "@patternfly/react-core/dist/esm/layouts/Split/index.js";
@@ -237,6 +236,7 @@ import { ExclamationTriangleIcon, InfoIcon, HelpIcon, EyeIcon, EyeSlashIcon } fr
 import { InputGroup } from "@patternfly/react-core/dist/esm/components/InputGroup/index.js";
 import { Table, Tbody, Tr, Td } from '@patternfly/react-table';
 
+import { TypeaheadSelect } from "cockpit-components-typeahead-select";
 import { show_modal_dialog, apply_modal_dialog } from "cockpit-components-dialog.jsx";
 import { ListingTable } from "cockpit-components-table.jsx";
 import { FormHelper } from "cockpit-components-form-helper";
@@ -669,24 +669,17 @@ export const PassInput = (tag, title, options) => {
     };
 };
 
-const TypeAheadSelectElement = ({ options, change }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [value, setValue] = useState(options.value);
-
+const TypeAheadSelectElement = ({ value, options, change }) => {
     return (
-        <TypeAheadSelect
-            variant="typeahead"
-            isCreatable
-            createText={_("Use")}
-            id="nfs-path-on-server"
-            isOpen={isOpen}
-            selections={value}
-            onToggle={(_event, isOpen) => setIsOpen(isOpen)}
-            onSelect={(event, value) => { setValue(value); change(value) }}
-            onClear={() => setValue(false)}
-            isDisabled={options.disabled}>
-            {options.choices.map(entry => <SelectOption key={entry} value={entry} />)}
-        </TypeAheadSelect>
+        <TypeaheadSelect toggleProps={ { id: "nfs-path-on-server" } }
+                         isScrollable
+                         isCreatable
+                         createOptionMessage={val => cockpit.format(_("Use $0"), val)}
+                         selected={value}
+                         onSelect={(_, value) => change(value)}
+                         onClearSelection={() => change("")}
+                         isDisabled={options.disabled}
+                         selectOptions={options.choices.map(entry => ({ value: entry, content: entry }))} />
     );
 };
 
@@ -698,9 +691,11 @@ export const ComboBox = (tag, title, options) => {
         initial_value: options.value || "",
 
         render: (val, change, validated) => {
-            return <div data-field={tag} data-field-type="combobox">
-                <TypeAheadSelectElement options={options} change={change} />
-            </div>;
+            return (
+                <div data-field={tag} data-field-type="combobox">
+                    <TypeAheadSelectElement value={val} options={options} change={change} />
+                </div>
+            );
         }
     };
 };
@@ -1427,7 +1422,7 @@ export const StopProcessesMessage = ({ mount_point, users }) => {
         return {
             columns: [
                 u.pid,
-                { title: u.cmd.substr(0, 100), props: { modifier: "breakWord" } },
+                { title: u.cmd.substring(0, 100), props: { modifier: "breakWord" } },
                 u.user || "-",
                 { title: format_delay(-u.since * 1000), props: { modifier: "nowrap" } }
             ]
@@ -1438,7 +1433,7 @@ export const StopProcessesMessage = ({ mount_point, users }) => {
         return {
             columns: [
                 { title: u.unit.replace(/\.service$/, ""), props: { modifier: "breakWord" } },
-                { title: u.cmd.substr(0, 100), props: { modifier: "breakWord" } },
+                { title: u.cmd.substring(0, 100), props: { modifier: "breakWord" } },
                 { title: u.desc || "", props: { modifier: "breakWord" } },
                 { title: format_delay(-u.since * 1000), props: { modifier: "nowrap" } }
             ]
