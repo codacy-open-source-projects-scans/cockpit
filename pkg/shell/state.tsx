@@ -20,17 +20,19 @@
 import cockpit from "cockpit";
 
 import { EventEmitter } from "cockpit/event";
+import { Status } from "notifications";
 
 import { Router } from "./router.jsx";
 import {
     machines as machines_factory,
-    Machine, Machines, Loader, Manifest
+    Machine, Machines, Loader
 } from "./machines/machines.js";
 import {
     decode_location, decode_window_location, push_window_location, replace_window_location,
     compile_manifests, compute_frame_url,
     Location, ManifestItem, CompiledComponents,
 } from "./util.jsx";
+import { Manifest } from "./manifests";
 
 export interface ShellConfig {
     language: string;
@@ -307,13 +309,13 @@ export class ShellState extends EventEmitter<ShellStateEvents> {
      * individual pages have access to all collected statuses.
      */
 
-    page_status: { [host: string]: { [page: string]: unknown } } = { };
+    page_status: { [host: string]: { [page: string]: Status } } = { };
 
     #init_page_status() {
         sessionStorage.removeItem("cockpit:page_status");
     }
 
-    #notify_page_status(host: string, page: string, status: unknown) {
+    #notify_page_status(host: string, page: string, status: Status) {
         if (!this.page_status[host])
             this.page_status[host] = { };
         this.page_status[host][page] = status;
@@ -357,7 +359,7 @@ export class ShellState extends EventEmitter<ShellStateEvents> {
              * send messages from the top-most window, which we know is
              * named "cockpit1".
              */
-            perform_frame_jump_command: (frame_name: string, location: Location | string) => {
+            perform_frame_jump_command: (frame_name: string, location: string) => {
                 if (frame_name == "cockpit1" || (this.current_frame && this.current_frame.name == frame_name)) {
                     this.jump(location);
                     this.ensure_connection();
@@ -391,7 +393,7 @@ export class ShellState extends EventEmitter<ShellStateEvents> {
              * "well-known name" of a page, such as "system",
              * "network/firewall", or "updates".
              */
-            handle_notifications: (host: string, page: string, data: { page_status?: unknown }) => {
+            handle_notifications: (host: string, page: string, data: { page_status?: Status }) => {
                 if (data.page_status !== undefined)
                     this.#notify_page_status(host, page, data.page_status);
             },
@@ -477,7 +479,7 @@ export class ShellState extends EventEmitter<ShellStateEvents> {
     }
 
     jump (location: Partial<Location> | string): boolean {
-        if (typeof (location) === "string")
+        if (typeof location === "string")
             location = decode_location(location);
 
         const current = decode_window_location();
@@ -501,7 +503,7 @@ export class ShellState extends EventEmitter<ShellStateEvents> {
         if (location.host !== current.host ||
             location.path !== current.path ||
             location.hash !== current.hash) {
-            push_window_location(location as Location);
+            push_window_location(location);
             this.update();
             this.ensure_frame_loaded();
             return true;

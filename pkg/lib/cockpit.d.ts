@@ -44,6 +44,7 @@ declare module 'cockpit' {
         wait(callback: (transport: Transport) => void): void;
         close(problem?: string): void;
         application(): string;
+        control(command: string, options: JsonObject): void;
     }
 
     export const transport: Transport;
@@ -220,6 +221,7 @@ declare module 'cockpit' {
     interface DBusOptions {
         bus?: string;
         address?: string;
+        host?: string;
         superuser?: "require" | "try";
         track?: boolean;
     }
