@@ -784,6 +784,21 @@ class Browser:
         self.wait_not_present(".pf-v6-c-menu")
         self.wait_val(f"{group_identifier} .pf-v6-c-menu-toggle input", location)
 
+    def count(self, selector: str) -> int:
+        """Returns the total count of matches DOM elements.
+
+        :param selector: the selector
+        """
+        return self.call_js_func('ph_count', selector)
+
+    def wait_count(self, selector: str, total: int) -> None:
+        """Wait until the total count matches the selected DOM elements.
+
+        :param selector: the selector
+        :param total: the total amount of elements to wait for
+        """
+        return self.wait_js_func("ph_count_check", selector, total)
+
     @contextlib.contextmanager
     def wait_timeout(self, timeout: int) -> Iterator[None]:
         old_timeout = self.timeout
@@ -825,6 +840,7 @@ class Browser:
                     # chromium
                     "Execution context was destroyed",
                     "Cannot find context",
+                    "Inspected target navigated or closed",
                     # firefox
                     "MessageHandlerFrame' destroyed",
                     # page helpers not yet loaded
@@ -1584,7 +1600,7 @@ class Browser:
         if not (Image and self.pixels_label):
             return
 
-        pixel_references = set(glob.glob(os.path.join(TEST_DIR, "reference", self.pixels_label + "*-pixels.png")))
+        pixel_references = set(glob.glob(os.path.join(TEST_DIR, "reference", self.pixels_label + "-*-pixels.png")))
         unused = pixel_references - self.used_pixel_references
         for u in unused:
             print("Unused reference image " + os.path.basename(u))
@@ -2144,6 +2160,9 @@ class MachineCase(unittest.TestCase):
 
         # timedatex.service shuts down after timeout, runs into race condition with property watching
         ".*org.freedesktop.timedate1: couldn't get all properties.*Error:org.freedesktop.DBus.Error.NoReply.*",
+
+        # Ubuntu 25.10 triggers systemd-detect-virt apparmor violations
+        '.*apparmor="DENIED" operation="capable" class="cap" profile="systemd-detect-virt".*',
     ]
 
     default_allowed_messages += os.environ.get("TEST_ALLOW_JOURNAL_MESSAGES", "").split(",")
