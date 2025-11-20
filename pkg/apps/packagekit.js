@@ -29,35 +29,15 @@ class ProgressReporter {
     }
 
     progress_reporter(data) {
-        if (data.absolute_percentage >= 0) {
-            const newPercentage = this.base + data.absolute_percentage / 100 * this.range;
+        if (data.percentage >= 0) {
+            const newPercentage = this.base + data.percentage / 100 * this.range;
             // PackageKit with Apt backend reports wrong percentages https://github.com/PackageKit/PackageKit/issues/516
             // Double check here that we have an increasing only progress value
             if (this.percentage == undefined || newPercentage >= this.percentage)
                 this.percentage = newPercentage;
         }
-        this.callback({ percentage: this.percentage, ...data });
+        this.callback({ ...data, percentage: this.percentage });
     }
-}
-
-function resolve_many(method, filter, names, progress_cb) {
-    const ids = [];
-
-    return PK.cancellableTransaction(method, [filter, names], progress_cb,
-                                     {
-                                         Package: (info, package_id) => ids.push(package_id),
-                                     })
-            .then(() => ids);
-}
-
-function resolve(method, filter, name, progress_cb) {
-    return resolve_many(method, filter, [name], progress_cb)
-            .then(function (ids) {
-                if (ids.length === 0)
-                    return Promise.reject(new PK.TransactionError("not-found", "Can't resolve package"));
-                else
-                    return ids[0];
-            });
 }
 
 function reload_bridge_packages() {
@@ -65,35 +45,22 @@ function reload_bridge_packages() {
 }
 
 export function install(name, progress_cb) {
-    const progress = new ProgressReporter(0, 1, progress_cb);
+    const progress = new ProgressReporter(0, 100, progress_cb);
 
-    return resolve("Resolve", PK.Enum.FILTER_ARCH | PK.Enum.FILTER_NOT_SOURCE | PK.Enum.FILTER_NEWEST, name,
-                   progress.progress_reporter)
-            .then(pkgid => {
-                progress.base = 1;
-                progress.range = 99;
-
-                return PK.cancellableTransaction("InstallPackages", [0, [pkgid]], progress.progress_reporter)
-                        .then(reload_bridge_packages);
-            });
+    return PK.install_packages([name], progress.progress_reporter).then(reload_bridge_packages);
 }
 
-export function remove(name, progress_cb) {
+export async function remove(name, progress_cb) {
     const progress = new ProgressReporter(0, 1, progress_cb);
-
-    return resolve("SearchFiles", PK.Enum.FILTER_INSTALLED, name, progress.progress_reporter)
-            .then(pkgid => {
-                progress.base = 1;
-                progress.range = 99;
-
-                return PK.cancellableTransaction("RemovePackages", [0, [pkgid], true, false], progress.progress_reporter)
-                        .then(reload_bridge_packages);
-            });
+    const pkgnames = await PK.find_file_packages([name], progress.progress_reporter);
+    progress.base = 1;
+    progress.range = 99;
+    await PK.remove_packages(pkgnames, progress.progress_reporter);
+    await reload_bridge_packages();
 }
 
 export function refresh(origin_files, config_packages, data_packages, progress_cb) {
     const origin_pkgs = { };
-    const update_ids = [];
 
     /* In addition to refreshing the repository metadata, we also
      * update all packages that contain AppStream collection metadata.
@@ -114,66 +81,46 @@ export function refresh(origin_files, config_packages, data_packages, progress_c
     const progress = new ProgressReporter(0, 1, progress_cb);
 
     const search_origin_file_packages = () => {
-        return PK.cancellableTransaction("SearchFiles", [PK.Enum.FILTER_INSTALLED, origin_files],
-                                         progress.progress_reporter,
-                                         {
-                                             Package: (info, package_id) => {
-                                                 const pkg = package_id.split(";")[0];
-                                                 origin_pkgs[pkg] = true;
-                                             },
-                                         });
+        return PK.find_file_packages(origin_files, progress.progress_reporter).then(packages => {
+            for (const pkgname of packages) {
+                origin_pkgs[pkgname] = true;
+            }
+        });
     };
 
     const refresh_cache = () => {
         progress.base = 6;
         progress.range = 69;
 
-        return PK.cancellableTransaction("RefreshCache", [true], progress.progress_reporter);
+        return PK.refresh(true, progress.progress_reporter);
     };
 
     const maybe_update_origin_file_packages = () => {
         progress.base = 75;
         progress.range = 5;
 
-        return PK.cancellableTransaction("GetUpdates", [0], progress.progress_reporter,
-                                         {
-                                             Package: (info, package_id) => {
-                                                 const pkg = package_id.split(";")[0];
-                                                 if (pkg in origin_pkgs)
-                                                     update_ids.push(package_id);
-                                             },
-                                         })
-                .then(() => {
-                    progress.base = 80;
-                    progress.range = 15;
+        return PK.get_updates(false, progress.progress_reporter).then(updates => {
+            const filtered_updates = [];
 
-                    if (update_ids.length > 0)
-                        return PK.cancellableTransaction("UpdatePackages", [0, update_ids],
-                                                         progress.progress_reporter);
-                });
+            for (const update of updates) {
+                if (update.name in origin_pkgs)
+                    filtered_updates.push(update);
+            }
+
+            progress.base = 80;
+            progress.range = 15;
+
+            if (filtered_updates.length > 0)
+                return PK.update_packages(filtered_updates, progress.progress_reporter, null);
+        });
     };
 
     const ensure_packages = (pkgs, start_progress) => {
         if (pkgs.length > 0) {
             progress.base = start_progress;
-            progress.range = 1;
+            progress.range = 5;
 
-            return resolve_many("Resolve",
-                                PK.Enum.FILTER_ARCH | PK.Enum.FILTER_NOT_SOURCE | PK.Enum.FILTER_NEWEST | PK.Enum.FILTER_NOT_INSTALLED,
-                                pkgs, progress.progress_reporter)
-                    .then(ids => {
-                        if (ids.length > 0) {
-                            progress.base = start_progress + 1;
-                            progress.range = 4;
-
-                            return PK.cancellableTransaction("InstallPackages", [0, ids],
-                                                             progress.progress_reporter)
-                                    .catch(ex => {
-                                        if (ex.code != PK.Enum.ERROR_ALREADY_INSTALLED)
-                                            return Promise.reject(ex);
-                                    });
-                        }
-                    });
+            return PK.install_packages(pkgs, progress.progress_reporter);
         } else {
             return Promise.resolve();
         }

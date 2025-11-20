@@ -83,6 +83,11 @@ function dbus_client() {
 // Reconnect when privileges change
 superuser.addEventListener("changed", () => { _dbus_client = null });
 
+function debug() {
+    if (window.debugging == 'all' || window.debugging?.includes('packagekit'))
+        console.debug.apply(console, arguments);
+}
+
 /**
  * Call a PackageKit method
  */
@@ -323,10 +328,6 @@ export function check_missing_packages(names, progress_cb) {
     if (names.length === 0)
         return Promise.resolve(data);
 
-    function refresh() {
-        return cancellableTransaction("RefreshCache", [false], progress_cb);
-    }
-
     function resolve() {
         const installed_names = { };
 
@@ -404,33 +405,80 @@ export function check_missing_packages(names, progress_cb) {
         }
     }
 
-    return refresh().then(resolve)
+    return refresh(false, progress_cb).then(resolve)
             .then(simulate)
             .then(get_details);
 }
 
-/* Check a list of packages whether they are installed.
+/**
+ * Check a list of packages whether they are installed.
  *
- * This is a lightweight version of check_missing_packages() which does not
- * refresh, simulates, or retrieves details. It just checks which of the given package
- * names are already installed, and returns a Set of the missing ones.
+ * @param {string[]} names - names of packages which should be installed
+ * @return {Promise<boolean>} true if packages are installed
  */
-export function check_uninstalled_packages(names) {
+export async function is_installed(names, progress_cb) {
     const uninstalled = new Set(names);
 
-    if (names.length === 0)
-        return Promise.resolve(uninstalled);
+    if (uninstalled.size === 0)
+        return true;
 
-    return cancellableTransaction("Resolve",
-                                  [Enum.FILTER_ARCH | Enum.FILTER_NOT_SOURCE | Enum.FILTER_INSTALLED, names],
-                                  null, // don't need progress, this is fast
-                                  {
-                                      Package: (info, package_id) => {
-                                          const parts = package_id.split(";");
-                                          uninstalled.delete(parts[0]);
-                                      },
-                                  })
-            .then(() => uninstalled);
+    await cancellableTransaction("Resolve",
+                                 [Enum.FILTER_ARCH | Enum.FILTER_NOT_SOURCE | Enum.FILTER_INSTALLED, names],
+                                 progress_cb,
+                                 {
+                                     Package: (info, package_id) => {
+                                         const parts = package_id.split(";");
+                                         uninstalled.delete(parts[0]);
+                                     },
+                                 });
+
+    return uninstalled.size === 0;
+}
+
+/**
+ * Check a list of packages whether they are available.
+ *
+ * @param {string[]} names - names of packages which should be available in the repositories
+ * @return {Promise<boolean>} true if packages are available
+ */
+export async function is_available(names, progress_cb) {
+    const available = new Set();
+
+    if ((names && names.length === 0))
+        return true;
+
+    await cancellableTransaction("Resolve",
+                                 [Enum.FILTER_ARCH | Enum.FILTER_NEWEST | Enum.FILTER_NOT_INSTALLED, names],
+                                 progress_cb,
+                                 {
+                                     Package: (info, package_id) => {
+                                         const pkgname = package_id.split(";")[0];
+                                         available.add(pkgname);
+                                     },
+                                 });
+
+    return available.size === new Set(names).size;
+}
+
+/**
+ * Find installed packages that own the given files.
+ *
+ * @param {string[]} files - the files to resolve to packages
+ * @return {Promise<string[]>} installed package names
+ */
+export async function find_file_packages(files, progress_cb) {
+    const installed = [];
+    await cancellableTransaction("SearchFiles",
+                                 [Enum.FILTER_ARCH | Enum.FILTER_NOT_SOURCE | Enum.FILTER_INSTALLED, files],
+                                 progress_cb,
+                                 {
+                                     Package: (info, package_id) => {
+                                         const pkg = package_id.split(";")[0];
+                                         installed.push(pkg);
+                                     },
+                                 });
+
+    return installed;
 }
 
 /* Carry out what check_missing_packages has planned.
@@ -478,4 +526,197 @@ export function install_missing_packages(data, progress_cb) {
 export function getBackendName() {
     return call("/org/freedesktop/PackageKit", "org.freedesktop.DBus.Properties",
                 "Get", ["org.freedesktop.PackageKit", "BackendName"]);
+}
+
+/**
+ * Refresh PackageKit Cache
+ * @param {boolean} force - force refresh the cache (expensive)
+ * @param {*} progress_cb - progress callback
+ */
+export function refresh(force = false, progress_cb) {
+    return cancellableTransaction("RefreshCache", [force], progress_cb);
+}
+
+/**
+ * Remove packages by their names.
+ *
+ * @param {?string[] | undefined} pkgnames - packages to remove
+ * @param {?() => void} progress_cb - progress callback
+ */
+export async function remove_packages(pkgnames, progress_cb) {
+    const ids = [];
+
+    await cancellableTransaction("Resolve", [Enum.FILTER_NOT_SOURCE | Enum.FILTER_INSTALLED | Enum.FILTER_NOT_SOURCE, pkgnames], null,
+                                 {
+                                     Package: (_info, package_id) => ids.push(package_id),
+                                 });
+
+    if (ids.length === 0)
+        return Promise.resolve();
+
+    return cancellableTransaction("RemovePackages", [0, ids, true, false], progress_cb);
+}
+
+/**
+ * @param {string[]} pkgnames - packages to install
+ * @param {?() => void} progress_cb - optional progress callback
+ */
+export async function install_packages(pkgnames, progress_cb) {
+    const flags = Enum.FILTER_ARCH | Enum.FILTER_NOT_SOURCE | Enum.FILTER_NEWEST;
+    const ids = [];
+
+    await cancellableTransaction("Resolve", [flags | Enum.FILTER_NOT_INSTALLED, Array.from(pkgnames)], null,
+                                 {
+                                     Package: (_info, package_id) => ids.push(package_id),
+                                 });
+
+    if (ids.length === 0)
+        return Promise.reject(new TransactionError("not-found", "Can't resolve package(s)"));
+    else
+        return cancellableTransaction("InstallPackages", [0, ids], progress_cb)
+                .catch(ex => {
+                    if (ex.code != Enum.ERROR_ALREADY_INSTALLED)
+                        return Promise.reject(ex);
+                });
+}
+
+/**
+ * On Debian the update_text starts with "== version ==" which is
+ * redundant; we don't want Markdown headings in the table
+ *
+ * @param {string} text - update_text to filter
+ */
+function removeHeading(text) {
+    if (text)
+        return text.trim().replace(/^== .* ==\n/, "")
+                .trim();
+    return text;
+}
+
+// parse CVEs from an arbitrary text (changelog) and return URL array
+function parseCVEs(text) {
+    if (!text)
+        return [];
+
+    const cves = text.match(/CVE-\d{4}-\d+/g);
+    if (!cves)
+        return [];
+    return cves.map(n => "https://www.cve.org/CVERecord?id=" + n);
+}
+
+function deduplicate(list) {
+    return [...new Set(list)].sort();
+}
+
+/** @returns {Promise<void>} */
+function loadUpdateDetailsBatch(pkg_ids, update_details, progress_cb) {
+    return cancellableTransaction("GetUpdateDetail", [pkg_ids], progress_cb, {
+        UpdateDetail: (packageId, _updates, _obsoletes, vendor_urls, bug_urls, cve_urls, _restart,
+            update_text, changelog /* state, issued, updated */) => {
+            const u = update_details[packageId];
+            if (!u) {
+                console.warn("Mismatching update:", packageId);
+                return;
+            }
+
+            u.vendor_urls = vendor_urls;
+            u.description = removeHeading(update_text) || changelog;
+            if (update_text)
+                u.markdown = true;
+
+            u.bug_urls = deduplicate(bug_urls);
+            // many backends don't support proper severities; parse CVEs from description as a fallback
+            u.cve_urls = deduplicate(cve_urls && cve_urls.length > 0 ? cve_urls : parseCVEs(u.description));
+            if (u.cve_urls && u.cve_urls.length > 0)
+                u.severity = Enum.INFO_SECURITY;
+            u.vendor_urls = vendor_urls || [];
+            // u.restart = restart; // broken (always "1") at least in Fedora
+            debug("UpdateDetail:", u);
+        }
+    });
+}
+
+/**
+ * Get Updates
+ * updates = { id, name, version, arch }
+ * with details
+ * updates = { id, name, version, arch, severity, bug_urls, cve_urls, vendor_urls, description, markdown }
+ * @param {boolean} details - fetch detailed package information (security information)
+ */
+export async function get_updates(details, progress_cb) {
+    const updates = {};
+
+    await cancellableTransaction(
+        "GetUpdates", [0],
+        progress_cb,
+        {
+            Package: (info, packageId, summary) => {
+                // HACK: security updates have 0x50008 with PackageKit 1.2.8, so just consider the lower 8 bits
+                info = info & 0xff;
+                const id_fields = packageId.split(";");
+                // HACK: dnf backend yields wrong severity with PK < 1.2.4 (https://github.com/PackageKit/PackageKit/issues/268)
+                if (info < Enum.INFO_LOW || info > Enum.INFO_SECURITY)
+                    info = Enum.INFO_NORMAL;
+
+                updates[packageId] = { id: packageId, name: id_fields[0], version: id_fields[1], severity: info, arch: id_fields[2], summary };
+            }
+        });
+
+    const pkg_ids = Object.keys(updates);
+
+    if (details && pkg_ids.length > 0) {
+        const processBatch = async (remaining_ids, current_batch_size) => {
+            if (remaining_ids.length === 0) {
+                return;
+            }
+
+            const batch = remaining_ids.slice(0, current_batch_size);
+            const next_ids = remaining_ids.slice(current_batch_size);
+
+            try {
+                await loadUpdateDetailsBatch(batch, updates, progress_cb);
+                // continue with next batch using same batch size
+                await processBatch(next_ids, current_batch_size);
+            } catch (ex) {
+                console.warn("GetUpdateDetail failed with batch size", current_batch_size, ":", JSON.stringify(ex));
+
+                if (current_batch_size > 1) {
+                    // Reduce batch size to 1 and retry
+                    console.log("Reducing GetUpdateDetail batch size to 1 and retrying");
+                    await processBatch(remaining_ids, 1);
+                } else {
+                    // Even batch size 1 failed, skip this batch and continue
+                    console.warn("Failed to load update details for package:", batch[0]);
+                    await processBatch(next_ids, 1);
+                }
+            }
+        };
+
+        // Avoid exceeding cockpit-ws frame size, so batch the loading of details
+        // if we run into https://issues.redhat.com/browse/RHEL-109779 then we need to fall back to load packages
+        // individually
+        await processBatch(pkg_ids, 500);
+    }
+
+    const results = [];
+    Object.keys(updates).forEach(key => {
+        results.push({ id: key, ...updates[key] });
+    });
+    return results;
+}
+
+/**
+ * Update packages
+ *
+ * @param {any[]} updates - packages to update from get_updates()
+ * @param {?() => void} progress_cb - optional progress callback
+ * @param {?string} transaction_path - optional transaction_path to re-use an existing transaction
+ */
+export function update_packages(updates, progress_cb, transaction_path) {
+    const update_ids = updates.map(update => update.id);
+    if (transaction_path) {
+        return call(transaction_path, transactionInterface, "UpdatePackages", [0, update_ids]);
+    } else {
+        return cancellableTransaction("UpdatePackages", [0, update_ids], progress_cb);
+    }
 }
