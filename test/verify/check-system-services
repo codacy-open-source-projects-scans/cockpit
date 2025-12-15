@@ -63,7 +63,7 @@ class TestServices(testlib.MachineCase):
 
     def do_action(self, action: str):
         self.browser.click(".service-top-panel button.pf-v6-c-menu-toggle")
-        self.browser.click(f"#services-page .pf-v6-c-menu__list-item:contains('{action}') button")
+        self.browser.click(f"#services-page button.pf-v6-c-menu__item:contains('{action}')")
 
     def check_service_details(self, statuses: list[str], actions: list[str],
                               enabled: bool, onoff: bool = True, kebab: bool = True):
@@ -1262,7 +1262,9 @@ Where=/fail
         b.wait_not_present("html.pf-v6-theme-dark")
         b.switch_to_top()
         b.open_superuser_dialog()
-        b.click(".pf-v6-c-modal-box:contains('Switch to limited access') button:contains('Limit access')")
+        b.wait_text(".pf-v6-c-modal-box__title-text", "Switch to limited access")
+        b.click(".pf-v6-c-modal-box button:contains('Limit access')")
+        b.wait_not_present(".pf-v6-c-modal-box")
         b.check_superuser_indicator("Limited access")
         b.enter_page("/system/services")
         b.wait_not_present("html.pf-v6-theme-dark")
@@ -1279,7 +1281,7 @@ Where=/fail
         b.wait_in_text(".pf-v6-c-label-group:contains('File state')", "Disabled")
         b.wait_in_text(".pf-v6-c-label-group:contains('File state')", "Enabled")
         b.wait_visible(".services-text-filter input[value=test]")
-        b.wait_visible(".pf-v6-c-nav__list a.pf-m-current:contains(Services)")
+        b.wait_visible(".pf-v6-c-nav__list a.pf-m-current:contains('Services')")
         b.wait_visible("#user.pf-m-selected")
         # there is no running "test" service
         self.browser.wait_in_text(".pf-v6-c-empty-state", "No matching results")
@@ -1294,7 +1296,7 @@ Where=/fail
         self.assertIn("owner=system", url)
 
         # Mass remove active state filters and check the URL
-        b.click(".pf-v6-c-label-group:contains('Active state') .pf-v6-c-label__actions > button")
+        b.click(".pf-v6-c-label-group button[aria-label='Close Running']")
         b.wait_js_cond('window.location.hash == "#/?filestate=%5B%22Disabled%22%2C%22Enabled%22%5D&name=test&type=service&owner=system"')
 
         b.click(".pf-v6-c-toolbar__content .pf-v6-c-toolbar__item > button:contains('Clear all filters')")

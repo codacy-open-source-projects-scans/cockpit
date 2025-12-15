@@ -446,7 +446,7 @@ OnCalendar=daily
         b.input_text("se")
         b.wait_not_present("#host-apps li a:contains('Logs')")
         b.wait_visible("#host-apps li a:contains('Services')")
-        b.wait_text("#host-apps li a:contains('Services') mark", "Se")
+        b.wait_text("#host-apps li a[href='/system/services'] mark", "Se")
 
         b.focus(filter_sel)
         b.key("Backspace", 2)
@@ -458,7 +458,7 @@ OnCalendar=daily
         b.input_text("CoUN")
         b.wait_not_present("#host-apps li a:contains('Overview')")
         b.wait_visible("#host-apps li a:contains('Accounts')")
-        b.wait_text("#host-apps li a:contains('Accounts') mark", "coun")
+        b.wait_text("#host-apps li a[href='/users'] mark", "coun")
 
         # Check it can also search by keywords
         b.focus(filter_sel)
@@ -466,7 +466,7 @@ OnCalendar=daily
         b.input_text("systemd")
         b.wait_visible("#host-apps li a:contains('Services')")
         b.wait_text("#host-apps li a:contains('Services')", "ServicesContains: systemd")
-        b.wait_text("#host-apps li a:contains('Services') mark", "systemd")
+        b.wait_text("#host-apps li a[href='/system/services'] mark", "systemd")
 
         # Clean up failed services for screenshots
         m.execute("systemctl reset-failed")
@@ -561,7 +561,7 @@ OnCalendar=daily
         b.input_text("dien")
         b.wait_not_present("#host-apps li a:contains('Protokolle')")
         b.wait_visible("#host-apps li a:contains('Dienste')")
-        b.wait_text("#host-apps li a:contains('Dienste') mark", "Dien")
+        b.wait_text("#host-apps li a[href='/system/services'] mark", "Dien")
 
     def testShellPreload(self):
         b = self.browser
@@ -813,7 +813,7 @@ OnCalendar=daily
         assert_location("/users#/root")
 
         b.enter_page("/users")
-        b.click("nav a:contains(Accounts)")
+        b.click("nav a:contains('Accounts')")
         b.wait_visible("button:contains('Create new account')")
         b.switch_to_top()
         assert_location("/users")
@@ -864,7 +864,7 @@ OnCalendar=daily
         if not self.machine.ws_container:
 
             b.enter_page("/system")
-            b.click("button:contains(View login history)")
+            b.click("button:contains('View login history')")
             b.enter_page("/users")
             b.wait_text("#account-title", "Administrator")
             b.switch_to_top()

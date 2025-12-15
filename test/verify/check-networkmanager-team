@@ -71,8 +71,8 @@ class TestTeam(netlib.NetworkCase):
 
         # Deactivate the team and make sure it is still there after a
         # reload.
-        self.wait_onoff(".pf-v6-c-card__header:contains('tteam')", val=True)
-        self.toggle_onoff(".pf-v6-c-card__header:contains('tteam')")
+        self.wait_onoff("label[for='interface-switch']", val=True)
+        self.toggle_onoff("label[for='interface-switch']")
         self.wait_for_iface_setting('Status', 'Inactive')
         b.reload()
         b.enter_page("/network")
@@ -122,7 +122,7 @@ class TestTeam(netlib.NetworkCase):
         b.wait_in_text("#network-interface .pf-v6-c-card:contains('tteam')", "10.111")
 
         # Check team port
-        b.click("#network-interface-members button:contains(cockpit1)")
+        b.click("#network-interface-members button:contains('cockpit1')")
         b.click("#networking-edit-teamport")
         b.wait_visible("#network-team-port-settings-dialog")
         b.set_input_text("#network-team-port-settings-activebackup-prio-input", "10")

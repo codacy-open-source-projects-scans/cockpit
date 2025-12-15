@@ -4,8 +4,12 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
-# we need an apparmor profile for >= 4.0; this exists in Ubuntu >= 24.04, but not in Debian yet
-PRE4AA = $(filter $(shell . /etc/os-release; echo $${VERSION_ID:-unstable}),22.04 11 12 unstable)
+# we need an apparmor profile for >= 4.0; this does not yet exist in Ubuntu 22.04
+PRE4AA = $(filter $(shell . /etc/os-release; echo $${VERSION_ID:-unstable}),22.04)
+
+# Ubuntu 22.04 LTS's node.js version 12 is too old to understand our source, so
+# keep the pre-built dist/ for that release only
+KEEP_DIST = $(filter $(shell . /etc/os-release; echo $${VERSION_ID:-unstable}),22.04)
 
 # keep the host switcher on in currently supported stable releases
 STABLE = $(filter $(shell . /etc/os-release; echo $${VERSION_CODENAME}),bookworm jammy noble)
@@ -28,6 +32,14 @@ export deb_pamlibdir = $(shell { pkgconf --variable=libdir pam || echo /lib/$(DE
 	dh $@ --buildsystem=autoconf --with=python3
 
 override_dh_auto_configure:
+ifeq ($(KEEP_DIST),)
+	# upstream releases include a pre-built dist/, rebuild it
+	rm -fr dist/
+	# remove mini-node_modules with sizzle
+	rm -fr node_modules
+	# HACK: names for additional tarballs can't contain '_', so we name it just "orig-node"
+	ln -fs node node_modules
+endif
 	dh_auto_configure -- \
 		--with-pamdir=/$(deb_pamlibdir)/security \
 		--libexecdir=/usr/lib/cockpit $(CONFIG_OPTIONS)
@@ -47,7 +59,7 @@ override_dh_install:
 	install -p -m 644 tools/cockpit.debian.pam debian/tmp/etc/pam.d/cockpit
 
 	# don't ship broken branding symlinks
-	for d in rhel fedora centos opensuse; do rm -r debian/tmp/usr/share/cockpit/branding/$$d; done
+	for d in arch rhel fedora centos opensuse; do rm -r debian/tmp/usr/share/cockpit/branding/$$d; done
 	dpkg-vendor --derives-from ubuntu || rm -r debian/tmp/usr/share/cockpit/branding/ubuntu
 
 	# handled by package maintainer scripts

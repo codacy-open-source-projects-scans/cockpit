@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-13 15:28+0000\n"
+"POT-Creation-Date: 2025-12-05 10:34+0000\n"
 "PO-Revision-Date: 2025-04-24 19:26+0000\n"
 "Last-Translator: Ondrej Sulek <feonsu@gmail.com>\n"
 "Language-Team: Slovak <https://translate.fedoraproject.org/projects/cockpit/"
@@ -243,7 +243,7 @@ msgstr[0] "$0 balíček"
 msgstr[1] "$0 balíčky"
 msgstr[2] "$0 balíčkov"
 
-#: pkg/packagekit/updates.jsx:699 pkg/packagekit/updates.jsx:813
+#: pkg/packagekit/updates.jsx:687 pkg/packagekit/updates.jsx:801
 msgid "$0 package needs a system reboot"
 msgid_plural "$0 packages need a system reboot"
 msgstr[0] "$0 balíček vyžaduje reštart systému"
@@ -261,7 +261,7 @@ msgstr[2] "$0 stránok"
 msgid "$0 partitions"
 msgstr "$0 oddiel"
 
-#: pkg/packagekit/updates.jsx:785
+#: pkg/packagekit/updates.jsx:773
 msgid "$0 security fix available"
 msgid_plural "$0 security fixes available"
 msgstr[0] "Je k dispozícií $0 bezpečnostná aktualizácia"
@@ -275,14 +275,14 @@ msgstr[0] "$0 služba havarovala"
 msgstr[1] "$0 služby havarovali"
 msgstr[2] "$0 služieb havarovalo"
 
-#: pkg/packagekit/updates.jsx:716 pkg/packagekit/updates.jsx:825
+#: pkg/packagekit/updates.jsx:704 pkg/packagekit/updates.jsx:813
 msgid "$0 service needs to be restarted"
 msgid_plural "$0 services need to be restarted"
 msgstr[0] "$0 službu je potrebné reštartovať"
 msgstr[1] "$0 služby je potrebné reštartovať"
 msgstr[2] "$0 služieb je potrebné reštartovať"
 
-#: pkg/storaged/crypto/keyslots.jsx:789
+#: pkg/storaged/crypto/keyslots.jsx:790
 msgid "$0 slot remains"
 msgid_plural "$0 slots remain"
 msgstr[0] "$0 slot ostáva"
@@ -305,7 +305,7 @@ msgstr "$0 nesynchronizované"
 msgid "$0 total"
 msgstr "$0 celkom"
 
-#: pkg/packagekit/updates.jsx:793
+#: pkg/packagekit/updates.jsx:781
 msgid "$0 update available"
 msgid_plural "$0 updates available"
 msgstr[0] "Je dostupné $0 aktualizácia"
@@ -363,7 +363,7 @@ msgstr "(nepripojené)"
 msgid "(recommended)"
 msgstr "(odporúčaný)"
 
-#: pkg/packagekit/updates.jsx:795
+#: pkg/packagekit/updates.jsx:783
 msgid ", including $1 security fix"
 msgid_plural ", including $1 security fixes"
 msgstr[0] ", vrátane $1 bezpečnostnej aktualizácie"
@@ -626,7 +626,7 @@ msgstr ""
 "Na $0 bude vygenerovaný nový kľúč SSH $1 na $2 a bude pridaný do súboru $3 "
 "$4 na $5."
 
-#: pkg/packagekit/updates.jsx:1622
+#: pkg/packagekit/updates.jsx:1513
 msgid "A package needs a system reboot for the updates to take effect:"
 msgid_plural ""
 "Some packages need a system reboot for the updates to take effect:"
@@ -641,7 +641,7 @@ msgstr[2] ""
 msgid "A pool with this name exists already."
 msgstr "Pool s takým názvom už existuje."
 
-#: pkg/packagekit/updates.jsx:1626
+#: pkg/packagekit/updates.jsx:1517
 msgid "A service needs to be restarted for the updates to take effect:"
 msgid_plural ""
 "Some services need to be restarted for the updates to take effect:"
@@ -780,7 +780,7 @@ msgstr "Adaptívne rozkladanie prenosovej zátaže odosielania"
 
 #: pkg/storaged/iscsi/create-dialog.jsx:120
 #: pkg/storaged/iscsi/create-dialog.jsx:144 pkg/storaged/stratis/pool.jsx:526
-#: pkg/storaged/crypto/keyslots.jsx:477 pkg/storaged/crypto/keyslots.jsx:792
+#: pkg/storaged/crypto/keyslots.jsx:478 pkg/storaged/crypto/keyslots.jsx:793
 #: pkg/storaged/nfs/nfs.jsx:188 pkg/storaged/mdraid/mdraid.jsx:174
 #: pkg/storaged/lvm2/volume-group.jsx:211 pkg/systemd/timer-dialog.jsx:356
 #: pkg/shell/hosts_dialog.jsx:451 pkg/shell/credentials.tsx:92
@@ -794,12 +794,12 @@ msgstr "Pridať"
 msgid "Add $0"
 msgstr "Pridať $0"
 
-#: pkg/networkmanager/ip-settings.jsx:266
-#: pkg/networkmanager/ip-settings.jsx:271
+#: pkg/networkmanager/ip-settings.jsx:311
+#: pkg/networkmanager/ip-settings.jsx:316
 msgid "Add DNS server"
 msgstr "Pridať DNS server"
 
-#: pkg/storaged/crypto/keyslots.jsx:404
+#: pkg/storaged/crypto/keyslots.jsx:405
 msgid "Add Network Bound Disk Encryption"
 msgstr "Pridať šifrovanie diskov viazané na sieť"
 
@@ -827,8 +827,8 @@ msgstr "Pridať bitovú mapu"
 msgid "Add a new zone"
 msgstr "Pridať novú zónu"
 
-#: pkg/networkmanager/ip-settings.jsx:202
-#: pkg/networkmanager/ip-settings.jsx:207
+#: pkg/networkmanager/ip-settings.jsx:247
+#: pkg/networkmanager/ip-settings.jsx:252
 msgid "Add address"
 msgstr "Pridať adresu"
 
@@ -857,7 +857,7 @@ msgstr "Pridať disky"
 msgid "Add iSCSI portal"
 msgstr "Pridať iSCSI portál"
 
-#: pkg/storaged/crypto/keyslots.jsx:441 pkg/shell/credentials.tsx:294
+#: pkg/storaged/crypto/keyslots.jsx:442 pkg/shell/credentials.tsx:294
 #: pkg/users/authorized-keys-panel.js:112
 msgid "Add key"
 msgstr "Pridať kĺúč"
@@ -903,13 +903,13 @@ msgstr "Pridať porty do zóny $0"
 msgid "Add public key"
 msgstr "Pridať verejný kĺúč"
 
-#: pkg/networkmanager/ip-settings.jsx:358
-#: pkg/networkmanager/ip-settings.jsx:363
+#: pkg/networkmanager/ip-settings.jsx:403
+#: pkg/networkmanager/ip-settings.jsx:408
 msgid "Add route"
 msgstr "Pridať trasu"
 
-#: pkg/networkmanager/ip-settings.jsx:312
-#: pkg/networkmanager/ip-settings.jsx:317
+#: pkg/networkmanager/ip-settings.jsx:357
+#: pkg/networkmanager/ip-settings.jsx:362
 msgid "Add search domain"
 msgstr "Pridať prehľadávanú doménu"
 
@@ -933,11 +933,11 @@ msgstr "Pridať teaming"
 msgid "Add zone"
 msgstr "Pridať zónu"
 
-#: pkg/storaged/crypto/keyslots.jsx:364
+#: pkg/storaged/crypto/keyslots.jsx:365
 msgid "Adding \"$0\" to encryption options"
 msgstr "Pridávam „$0\" do možností pre šifrovanie"
 
-#: pkg/storaged/crypto/keyslots.jsx:353
+#: pkg/storaged/crypto/keyslots.jsx:354
 msgid "Adding \"$0\" to filesystem options"
 msgstr "Pridávam „$0\" do možností pre systém súborov"
 
@@ -982,7 +982,7 @@ msgstr ""
 "firewallu, čím sa stratia nastavenia, ktoré boli vytvorené počas behu a "
 "neboli uložené!"
 
-#: pkg/storaged/crypto/keyslots.jsx:427
+#: pkg/storaged/crypto/keyslots.jsx:428
 msgid "Adding key"
 msgstr "Pridávam kľúč"
 
@@ -990,7 +990,7 @@ msgstr "Pridávam kľúč"
 msgid "Adding physical volume to $target"
 msgstr "Pridávam fyzický zväzok do $target"
 
-#: pkg/storaged/crypto/keyslots.jsx:325
+#: pkg/storaged/crypto/keyslots.jsx:326
 msgid "Adding rd.neednet=1 to kernel command line"
 msgstr "Pridávam rd.neednet=1 do parametrov pri zavádzaní jadra"
 
@@ -1021,8 +1021,8 @@ msgid "Additional port"
 msgstr "Ďalšie porty"
 
 #: pkg/storaged/iscsi/create-dialog.jsx:111 pkg/storaged/iscsi/session.jsx:91
-#: pkg/networkmanager/ip-settings.jsx:218
-#: pkg/networkmanager/ip-settings.jsx:373
+#: pkg/networkmanager/ip-settings.jsx:263
+#: pkg/networkmanager/ip-settings.jsx:418
 msgid "Address"
 msgstr "Adresa"
 
@@ -1038,7 +1038,7 @@ msgstr "Adresa nemôže byť prázdna"
 msgid "Address is not a valid URL"
 msgstr "Adresa nie je platné URL"
 
-#: pkg/networkmanager/ip-settings.jsx:192
+#: pkg/networkmanager/ip-settings.jsx:237
 msgid "Addresses"
 msgstr "Adresy"
 
@@ -1174,16 +1174,16 @@ msgstr ""
 msgid "Appearance"
 msgstr "Vzhľad"
 
-#: pkg/apps/application-list.jsx:166
+#: pkg/apps/application-list.jsx:165
 msgid "Application information is missing"
 msgstr "Informácie o aplikácii chýbajú"
 
 #: pkg/apps/index.html:23 pkg/apps/application.jsx:145
-#: pkg/apps/application-list.jsx:173 pkg/apps/manifest.json:0
+#: pkg/apps/application-list.jsx:172 pkg/apps/manifest.json:0
 msgid "Applications"
 msgstr "Aplikácie"
 
-#: pkg/apps/application-list.jsx:199
+#: pkg/apps/application-list.jsx:198
 msgid "Applications list"
 msgstr "Zoznam aplikácií"
 
@@ -1333,15 +1333,15 @@ msgstr "Poveriť SSH kľúč"
 msgid "Authorized public SSH keys"
 msgstr "Poverené verejné SSH kľúče"
 
-#: pkg/networkmanager/mtu.jsx:79 pkg/networkmanager/ip-settings.jsx:40
-#: pkg/networkmanager/ip-settings.jsx:265
-#: pkg/networkmanager/ip-settings.jsx:311
-#: pkg/networkmanager/ip-settings.jsx:357
+#: pkg/networkmanager/mtu.jsx:79 pkg/networkmanager/ip-settings.jsx:42
+#: pkg/networkmanager/ip-settings.jsx:310
+#: pkg/networkmanager/ip-settings.jsx:356
+#: pkg/networkmanager/ip-settings.jsx:402
 #: pkg/networkmanager/network-interface.jsx:380
 msgid "Automatic"
 msgstr "Automaticky"
 
-#: pkg/networkmanager/ip-settings.jsx:41
+#: pkg/networkmanager/ip-settings.jsx:43
 msgid "Automatic (DHCP only)"
 msgstr "Automaticky (iba DHCP)"
 
@@ -1377,7 +1377,7 @@ msgstr "Automatizačný skript"
 msgid "Available targets on $0"
 msgstr "Dostupné ciele na $0"
 
-#: pkg/packagekit/updates.jsx:436 pkg/packagekit/updates.jsx:922
+#: pkg/packagekit/updates.jsx:424 pkg/packagekit/updates.jsx:910
 msgid "Available updates"
 msgstr "Dostupné aktualizácie"
 
@@ -1501,11 +1501,11 @@ msgstr "Vysielanie"
 msgid "Broken configuration"
 msgstr "Chybné nastavenia"
 
-#: pkg/packagekit/updates.jsx:1532
+#: pkg/packagekit/updates.jsx:1423
 msgid "Bug fix updates available"
 msgstr "Sú dostupné opravy chýb"
 
-#: pkg/packagekit/updates.jsx:378
+#: pkg/packagekit/updates.jsx:367
 msgid "Bugs"
 msgstr "Chyby"
 
@@ -1548,7 +1548,7 @@ msgstr "Využitie procesoru"
 msgid "CPU usage/load"
 msgstr "Využitie procesora/záťaž (load)"
 
-#: pkg/packagekit/updates.jsx:360
+#: pkg/packagekit/updates.jsx:349
 msgid "CVE"
 msgstr "CVE"
 
@@ -1572,8 +1572,8 @@ msgstr "Nepodarilo sa nájsť žiadne záznamy pre danú kombináciu filtrov."
 #: pkg/systemd/overview-cards/cryptoPolicies.jsx:231 pkg/systemd/hwinfo.jsx:235
 #: pkg/systemd/service-details.jsx:91 pkg/systemd/service-details.jsx:749
 #: pkg/systemd/terminal.jsx:296 pkg/systemd/timer-dialog.jsx:392
-#: pkg/packagekit/autoupdates.jsx:453 pkg/packagekit/updates.jsx:538
-#: pkg/packagekit/updates.jsx:571 pkg/packagekit/kpatch.jsx:324
+#: pkg/packagekit/autoupdates.jsx:453 pkg/packagekit/updates.jsx:526
+#: pkg/packagekit/updates.jsx:559 pkg/packagekit/kpatch.jsx:324
 #: pkg/kdump/kdump-view.jsx:327 pkg/apps/utils.tsx:92
 #: pkg/lib/cockpit-components-shutdown.jsx:237
 #: pkg/lib/cockpit-connect-ssh.tsx:189 pkg/lib/cockpit-connect-ssh.tsx:502
@@ -1635,7 +1635,7 @@ msgstr "Kategória"
 #: pkg/storaged/iscsi/create-dialog.jsx:171 pkg/storaged/stratis/pool.jsx:707
 #: pkg/storaged/stratis/pool.jsx:788
 #: pkg/systemd/overview-cards/configurationCard.jsx:305
-#: pkg/lib/serverTime.js:722 pkg/users/expiration-dialogs.js:115
+#: pkg/lib/serverTime.js:723 pkg/users/expiration-dialogs.js:115
 #: pkg/users/expiration-dialogs.js:217 pkg/users/shell-dialog.js:78
 msgid "Change"
 msgstr "Zmeniť"
@@ -1663,7 +1663,7 @@ msgstr "Zmeniť názov iSCSI iniciátoru"
 msgid "Change label"
 msgstr "Zmeniť štítok"
 
-#: pkg/storaged/stratis/pool.jsx:893 pkg/storaged/crypto/keyslots.jsx:499
+#: pkg/storaged/stratis/pool.jsx:893 pkg/storaged/crypto/keyslots.jsx:500
 msgid "Change passphrase"
 msgstr "Zmeniť heslovú frázu"
 
@@ -1683,7 +1683,7 @@ msgstr "Zmeniť profil"
 msgid "Change shell"
 msgstr "Zmeniť shell"
 
-#: pkg/lib/serverTime.js:715
+#: pkg/lib/serverTime.js:716
 msgid "Change system time"
 msgstr "Zmeniť systémový čas"
 
@@ -1724,7 +1724,7 @@ msgstr ""
 "Zmenou nastavení sa uší spojenie so serverom a zneprístupní sa tak rozhranie "
 "pre jeho správu."
 
-#: pkg/packagekit/updates.jsx:904
+#: pkg/packagekit/updates.jsx:892
 msgid "Check for updates"
 msgstr "Skontrolovať aktualizácie"
 
@@ -1763,11 +1763,11 @@ msgstr "Kontrolujem využitie systému súborov"
 msgid "Checking for $0 package"
 msgstr "Kontrolujem balíček $0"
 
-#: pkg/storaged/crypto/keyslots.jsx:304
+#: pkg/storaged/crypto/keyslots.jsx:305
 msgid "Checking for NBDE support in the initrd"
 msgstr "Zisťujem prítomnosť podpory NBDE v initrd"
 
-#: pkg/packagekit/updates.jsx:1485
+#: pkg/packagekit/updates.jsx:1376
 msgid "Checking for package updates..."
 msgstr "Kontrolujem aktualizácie balíčkov..."
 
@@ -1776,7 +1776,7 @@ msgstr "Kontrolujem aktualizácie balíčkov..."
 msgid "Checking installed software"
 msgstr "Zisťujem nainštalovaný softvér"
 
-#: pkg/packagekit/updates.jsx:1495
+#: pkg/packagekit/updates.jsx:1386
 msgid "Checking software status"
 msgstr "Kontrolujem stav softvéru"
 
@@ -2042,7 +2042,7 @@ msgstr "Potvrdiť heslo"
 msgid "Confirm removal of $0"
 msgstr "Potvrdiť odstránenie $0"
 
-#: pkg/storaged/crypto/keyslots.jsx:608
+#: pkg/storaged/crypto/keyslots.jsx:609
 msgid "Confirm removal with an alternate passphrase"
 msgstr "Potvrdiť odstránenie pomocou alternatívnej heslovej fráze"
 
@@ -2132,7 +2132,7 @@ msgstr "Pokračovať"
 msgid "Contains:"
 msgstr "Obsahuje:"
 
-#: pkg/packagekit/updates.jsx:673 pkg/packagekit/updates.jsx:759
+#: pkg/packagekit/updates.jsx:661 pkg/packagekit/updates.jsx:747
 msgid "Continue"
 msgstr "Pokračovať"
 
@@ -2457,7 +2457,7 @@ msgstr "Používateľom definované zóny"
 msgid "DEFAULT with SHA-1 signature verification allowed."
 msgstr "PREDVOLENÝ so zapnutím overovania podpisu SHA-1."
 
-#: pkg/networkmanager/ip-settings.jsx:258
+#: pkg/networkmanager/ip-settings.jsx:303
 msgid "DNS"
 msgstr "DNS"
 
@@ -2465,7 +2465,7 @@ msgstr "DNS"
 msgid "DNS $val"
 msgstr "DNS $val"
 
-#: pkg/networkmanager/ip-settings.jsx:304
+#: pkg/networkmanager/ip-settings.jsx:349
 msgid "DNS search domains"
 msgstr "DNS prehľadávané domény"
 
@@ -2477,7 +2477,7 @@ msgstr "Prehľadávať DNS domény $val"
 msgid "Daily"
 msgstr "Denne"
 
-#: pkg/packagekit/updates.jsx:929
+#: pkg/packagekit/updates.jsx:917
 msgid "Danger alert:"
 msgstr "Výstraha pred nebezpečenstvom:"
 
@@ -2753,7 +2753,7 @@ msgstr "Desktop"
 msgid "Detachable"
 msgstr "Odpojiteľné"
 
-#: pkg/systemd/overview-cards/realmd.jsx:418 pkg/packagekit/updates.jsx:442
+#: pkg/systemd/overview-cards/realmd.jsx:418 pkg/packagekit/updates.jsx:430
 #: pkg/shell/credentials.tsx:313
 msgid "Details"
 msgstr "Detaily"
@@ -2821,7 +2821,7 @@ msgstr "Vypnúť tuned"
 #: pkg/systemd/service-details.jsx:444 pkg/systemd/services.jsx:247
 #: pkg/systemd/services.jsx:688 pkg/packagekit/autoupdates.jsx:469
 #: pkg/packagekit/kpatch.jsx:258 pkg/kdump/kdump-view.jsx:558
-#: pkg/networkmanager/ip-settings.jsx:46
+#: pkg/networkmanager/ip-settings.jsx:48
 #: pkg/networkmanager/firewall-switch.jsx:64
 #: pkg/networkmanager/firewall-switch.jsx:74
 msgid "Disabled"
@@ -2878,6 +2878,7 @@ msgid "Disks usage"
 msgstr "Využitie disku"
 
 #: pkg/storaged/lvm2/volume-group.jsx:353
+#: pkg/systemd/overview-cards/uncleanShutdownStatus.jsx:92
 msgid "Dismiss"
 msgstr "Zahodiť"
 
@@ -2996,7 +2997,7 @@ msgstr "Dual rank"
 msgid "EFI system partition"
 msgstr "Systémový oddiel EFI"
 
-#: pkg/storaged/crypto/keyslots.jsx:737 pkg/storaged/nfs/nfs.jsx:312
+#: pkg/storaged/crypto/keyslots.jsx:738 pkg/storaged/nfs/nfs.jsx:312
 #: pkg/packagekit/autoupdates.jsx:532 pkg/packagekit/kpatch.jsx:237
 #: pkg/kdump/kdump-view.jsx:494 pkg/shell/nav.tsx:421 pkg/shell/hosts.tsx:261
 #: pkg/networkmanager/firewall.jsx:117
@@ -3007,7 +3008,7 @@ msgstr "Upraviť"
 msgid "Edit /etc/motd"
 msgstr "Upraviť /etc/motd"
 
-#: pkg/storaged/crypto/keyslots.jsx:526
+#: pkg/storaged/crypto/keyslots.jsx:527
 msgid "Edit Tang keyserver"
 msgstr "Upraviť Tang server s kľúčami"
 
@@ -3068,7 +3069,7 @@ msgstr "Upraviť nastavenia teamingu"
 msgid "Edit user"
 msgstr "Upraviť používateľa"
 
-#: pkg/storaged/crypto/keyslots.jsx:739
+#: pkg/storaged/crypto/keyslots.jsx:740
 msgid "Editing a key requires a free slot"
 msgstr "Úprava kľúča vyžaduje voľný slot"
 
@@ -3121,7 +3122,7 @@ msgstr "Zapnúť bránu firewall"
 msgid "Enabled"
 msgstr "Povolená"
 
-#: pkg/storaged/crypto/keyslots.jsx:372
+#: pkg/storaged/crypto/keyslots.jsx:373
 msgid "Enabling $0"
 msgstr "Povoľujem $0"
 
@@ -3197,7 +3198,7 @@ msgstr ""
 msgid "Enforcing"
 msgstr "Vynucujúce"
 
-#: pkg/packagekit/updates.jsx:1534
+#: pkg/packagekit/updates.jsx:1425
 msgid "Enhancement updates available"
 msgstr "Sú k dispozícií vylepšujúce aktualizácie"
 
@@ -3217,7 +3218,7 @@ msgstr "Položka z"
 msgid "Erasing $target"
 msgstr "Mažem $target"
 
-#: pkg/packagekit/updates.jsx:372
+#: pkg/packagekit/updates.jsx:361
 msgid "Errata"
 msgstr "Errata"
 
@@ -3236,8 +3237,10 @@ msgstr "Chyba a závažnejšie"
 msgid "Error has occurred"
 msgstr "Vyskytla sa chyba"
 
-#: pkg/storaged/crypto/keyslots.jsx:293
-msgid "Error installing $0: PackageKit is not installed"
+#: pkg/storaged/crypto/keyslots.jsx:294
+#, fuzzy
+#| msgid "Error installing $0: PackageKit is not installed"
+msgid "Error installing $0: PackageKit or dnf5daemon-server is not installed"
 msgstr "Chyba pri inštalovaní $0: PackageKit nie je nainštalovaný"
 
 #: pkg/systemd/overview-cards/configurationCard.jsx:176
@@ -3431,7 +3434,7 @@ msgstr ""
 "automatic-install.timer. Ak chcete nastaviť automatické aktualizácie, "
 "odoberte používateľom vytvorené úpravy (overrides)."
 
-#: pkg/packagekit/updates.jsx:489
+#: pkg/packagekit/updates.jsx:477
 msgid "Failed to restart service"
 msgstr "Službu sa nepodarilo reštartovať"
 
@@ -3515,7 +3518,7 @@ msgstr "Brána firewall nie je k dispozícii"
 msgid "Firmware version"
 msgstr "Verzia firmvéru"
 
-#: pkg/storaged/crypto/keyslots.jsx:422
+#: pkg/storaged/crypto/keyslots.jsx:423
 msgid "Fix NBDE support"
 msgstr "Opraviť podporu pre NBDE"
 
@@ -3590,8 +3593,8 @@ msgstr "Z"
 msgid "Full name"
 msgstr "Celé meno"
 
-#: pkg/networkmanager/ip-settings.jsx:245
-#: pkg/networkmanager/ip-settings.jsx:389
+#: pkg/networkmanager/ip-settings.jsx:290
+#: pkg/networkmanager/ip-settings.jsx:434
 msgid "Gateway"
 msgstr "Brána"
 
@@ -3696,7 +3699,7 @@ msgstr "Jednotka pevného disku"
 msgid "Hardware information"
 msgstr "Informácie o hardware"
 
-#: pkg/systemd/overview-cards/healthCard.tsx:37
+#: pkg/systemd/overview-cards/healthCard.tsx:38
 msgid "Health"
 msgstr "Kondícia systému"
 
@@ -3823,7 +3826,7 @@ msgstr "IPv4 adresy"
 msgid "IPv4"
 msgstr "IPv4"
 
-#: pkg/networkmanager/ip-settings.jsx:185
+#: pkg/networkmanager/ip-settings.jsx:230
 msgid "IPv4 settings"
 msgstr "Nastavenia IPv4"
 
@@ -3831,7 +3834,7 @@ msgstr "Nastavenia IPv4"
 msgid "IPv6"
 msgstr "IPv6"
 
-#: pkg/networkmanager/ip-settings.jsx:185
+#: pkg/networkmanager/ip-settings.jsx:230
 msgid "IPv6 settings"
 msgstr "Nastavenia IPv6"
 
@@ -3899,8 +3902,8 @@ msgstr ""
 "Pridanie servera s kľúčmi vyžaduje odomknutie poolu. Zadajte súčasnú heslovú "
 "frázu k poolu."
 
-#: pkg/packagekit/updates.jsx:676 pkg/packagekit/updates.jsx:758
-#: pkg/networkmanager/ip-settings.jsx:44
+#: pkg/packagekit/updates.jsx:664 pkg/packagekit/updates.jsx:746
+#: pkg/networkmanager/ip-settings.jsx:46
 msgid "Ignore"
 msgstr "Ignorovať"
 
@@ -3973,7 +3976,7 @@ msgstr "Pamäť indexu"
 msgid "Indirect"
 msgstr "Nepriamo"
 
-#: pkg/packagekit/updates.jsx:750
+#: pkg/packagekit/updates.jsx:738
 msgid "Info"
 msgstr "Informácie"
 
@@ -3993,7 +3996,7 @@ msgstr "Inicializovať disk $0"
 msgid "Initializing erases all data on a disk."
 msgstr "Inicializácia vymaže všetky údaje na disku."
 
-#: pkg/packagekit/updates.jsx:575
+#: pkg/packagekit/updates.jsx:563
 msgid "Initializing..."
 msgstr "Inicializujem..."
 
@@ -4002,7 +4005,7 @@ msgid "Insights: "
 msgstr "Insights: "
 
 #: pkg/packagekit/kpatch.jsx:255 pkg/apps/application.jsx:51
-#: pkg/apps/application-list.jsx:195
+#: pkg/apps/application-list.jsx:194
 #: pkg/lib/cockpit-components-install-dialog.jsx:119
 msgid "Install"
 msgstr "Inštalovať"
@@ -4021,15 +4024,15 @@ msgstr "Nainštalovať podporu pre NFS"
 msgid "Install Stratis support"
 msgstr "Nainštalovať podporu pre Stratis"
 
-#: pkg/packagekit/updates.jsx:1511
+#: pkg/packagekit/updates.jsx:1402
 msgid "Install all updates"
 msgstr "Nainštalovať všetky aktualizácie"
 
-#: pkg/apps/application-list.jsx:189
+#: pkg/apps/application-list.jsx:188
 msgid "Install application information"
 msgstr "Nainštalovať informáciu o aplikácii"
 
-#: pkg/packagekit/updates.jsx:1524
+#: pkg/packagekit/updates.jsx:1415
 msgid "Install kpatch updates"
 msgstr "Nainštalovať kpatch aktualizácie"
 
@@ -4037,7 +4040,7 @@ msgstr "Nainštalovať kpatch aktualizácie"
 msgid "Install realmd support"
 msgstr "Nainštalovať podporu pre realmd"
 
-#: pkg/packagekit/updates.jsx:1510 pkg/packagekit/updates.jsx:1517
+#: pkg/packagekit/updates.jsx:1401 pkg/packagekit/updates.jsx:1408
 msgid "Install security updates"
 msgstr "Nainštalovať bezpečnostné aktualizácie"
 
@@ -4142,11 +4145,11 @@ msgstr "Neplatná adresa $0"
 msgid "Invalid IP address: $0"
 msgstr "Neplatná adresa $0"
 
-#: pkg/networkmanager/utils.js:104 pkg/networkmanager/utils.js:224
+#: pkg/networkmanager/utils.js:133 pkg/networkmanager/utils.js:238
 msgid "Invalid address $0"
 msgstr "Neplatná adresa $0"
 
-#: pkg/lib/serverTime.js:680 pkg/lib/cockpit-components-shutdown.jsx:120
+#: pkg/lib/serverTime.js:681 pkg/lib/cockpit-components-shutdown.jsx:120
 msgid "Invalid date format"
 msgstr "Neplatný formát dátumu"
 
@@ -4194,7 +4197,7 @@ msgstr "Neplatné číslo portu"
 msgid "Invalid prefix $0"
 msgstr "Neplatná predpona $0"
 
-#: pkg/networkmanager/utils.js:149
+#: pkg/networkmanager/utils.js:186
 msgid "Invalid prefix or netmask $0"
 msgstr "Neplatná predpona alebo maska siete $0"
 
@@ -4202,12 +4205,12 @@ msgstr "Neplatná predpona alebo maska siete $0"
 msgid "Invalid range"
 msgstr "Neplatný rozsah"
 
-#: pkg/packagekit/autoupdates.jsx:434 pkg/lib/serverTime.js:683
+#: pkg/packagekit/autoupdates.jsx:434 pkg/lib/serverTime.js:684
 #: pkg/lib/cockpit-components-shutdown.jsx:117
 msgid "Invalid time format"
 msgstr "Neplatný formát čase"
 
-#: pkg/lib/serverTime.js:675
+#: pkg/lib/serverTime.js:676
 msgid "Invalid timezone"
 msgstr "Neplatná časová zóna"
 
@@ -4319,28 +4322,28 @@ msgstr "Zaplátovanie jadra systému za behu"
 msgid "Key password"
 msgstr "Heslo ku kľúču"
 
-#: pkg/storaged/crypto/keyslots.jsx:768
+#: pkg/storaged/crypto/keyslots.jsx:769
 msgid "Key slots with unknown types can not be edited here"
 msgstr "Sloty kľúčov s neznámym typom tu nie je možné upraviť"
 
-#: pkg/storaged/crypto/keyslots.jsx:443
+#: pkg/storaged/crypto/keyslots.jsx:444
 msgid "Key source"
 msgstr "Zdroj pre kľúč"
 
-#: pkg/storaged/crypto/keyslots.jsx:774 pkg/storaged/crypto/keyslots.jsx:800
+#: pkg/storaged/crypto/keyslots.jsx:775 pkg/storaged/crypto/keyslots.jsx:801
 msgid "Keys"
 msgstr "Kľúče"
 
-#: pkg/storaged/stratis/pool.jsx:722 pkg/storaged/crypto/keyslots.jsx:762
+#: pkg/storaged/stratis/pool.jsx:722 pkg/storaged/crypto/keyslots.jsx:763
 msgid "Keyserver"
 msgstr "Server s kľúčami"
 
 #: pkg/storaged/stratis/create-dialog.jsx:137 pkg/storaged/stratis/pool.jsx:947
-#: pkg/storaged/crypto/keyslots.jsx:470 pkg/storaged/crypto/keyslots.jsx:528
+#: pkg/storaged/crypto/keyslots.jsx:471 pkg/storaged/crypto/keyslots.jsx:529
 msgid "Keyserver address"
 msgstr "Adresa servera s kľúčmi"
 
-#: pkg/storaged/crypto/keyslots.jsx:654
+#: pkg/storaged/crypto/keyslots.jsx:655
 msgid "Keyserver removal may prevent unlocking $0."
 msgstr "Odobranie servera s kľúčmi môže zabrániť odomknutiu $0."
 
@@ -4405,7 +4408,7 @@ msgstr "Naposledy aktívny"
 msgid "Last cannot be removed"
 msgstr "Posledný zostávajúci nie je možné odobrať"
 
-#: pkg/packagekit/updates.jsx:780
+#: pkg/packagekit/updates.jsx:768
 msgid "Last checked: $0"
 msgstr "Naposledy skontrolované: $0"
 
@@ -4502,7 +4505,7 @@ msgstr "Lineárny"
 msgid "Link down delay"
 msgstr "Oneskorenie neaktívnej linky"
 
-#: pkg/networkmanager/ip-settings.jsx:42
+#: pkg/networkmanager/ip-settings.jsx:44
 msgid "Link local"
 msgstr "Lokálne prepojenie"
 
@@ -4892,7 +4895,7 @@ msgstr "Správa softvérových aktualizácií"
 msgid "Managing user accounts"
 msgstr "Správa používateľských účtov"
 
-#: pkg/networkmanager/ip-settings.jsx:43
+#: pkg/networkmanager/ip-settings.jsx:45
 msgid "Manual"
 msgstr "Ručne"
 
@@ -4977,7 +4980,7 @@ msgstr "Využité metadáta"
 msgid "Method"
 msgstr "Metóda"
 
-#: pkg/networkmanager/ip-settings.jsx:397
+#: pkg/networkmanager/ip-settings.jsx:442
 msgid "Metric"
 msgstr "Metrika"
 
@@ -5053,7 +5056,7 @@ msgstr "Ciele monitorovania"
 msgid "Monthly"
 msgstr "Každý mesiac"
 
-#: pkg/packagekit/updates.jsx:936
+#: pkg/packagekit/updates.jsx:924
 msgid "More info..."
 msgstr "Viac _informácií..."
 
@@ -5206,7 +5209,7 @@ msgstr "NTP server"
 #: pkg/storaged/lvm2/thin-pool-logical-volume.jsx:44
 #: pkg/storaged/lvm2/thin-pool-logical-volume.jsx:137
 #: pkg/storaged/lvm2/vdo-pool.jsx:78 pkg/systemd/hwinfo.jsx:88
-#: pkg/systemd/timer-dialog.jsx:148 pkg/packagekit/updates.jsx:439
+#: pkg/systemd/timer-dialog.jsx:148 pkg/packagekit/updates.jsx:427
 #: pkg/shell/credentials.tsx:305 pkg/networkmanager/dialogs-common.jsx:133
 #: pkg/networkmanager/network-main.jsx:185
 #: pkg/networkmanager/network-main.jsx:200
@@ -5254,7 +5257,7 @@ msgstr "Názov nesmie obsahovať prázdny znak."
 msgid "Need a spare disk"
 msgstr "Potrebujete rezervný disk"
 
-#: pkg/lib/serverTime.js:688
+#: pkg/lib/serverTime.js:689
 msgid "Need at least one NTP server"
 msgstr "Je potrebný aspoň jeden server NTP"
 
@@ -5338,8 +5341,8 @@ msgstr "Nové heslo ku kľúču"
 msgid "New name"
 msgstr "Nový názov"
 
-#: pkg/storaged/stratis/pool.jsx:900 pkg/storaged/crypto/keyslots.jsx:454
-#: pkg/storaged/crypto/keyslots.jsx:504
+#: pkg/storaged/stratis/pool.jsx:900 pkg/storaged/crypto/keyslots.jsx:455
+#: pkg/storaged/crypto/keyslots.jsx:505
 msgid "New passphrase"
 msgstr "Nová heslová fráza"
 
@@ -5367,11 +5370,11 @@ msgstr "Nezadaný žiaden identifikátor"
 msgid "No SELinux alerts."
 msgstr "Žiadne výstrahy SELinux."
 
-#: pkg/apps/application-list.jsx:187
+#: pkg/apps/application-list.jsx:186
 msgid "No applications installed or available."
 msgstr "Nie sú nainštalované ani dostupné žiadne aplikácie."
 
-#: pkg/storaged/crypto/keyslots.jsx:789
+#: pkg/storaged/crypto/keyslots.jsx:790
 msgid "No available slots"
 msgstr "Nie sú dostupné žiadne sloty"
 
@@ -5446,7 +5449,7 @@ msgstr "Bez systému súborov"
 msgid "No filesystems"
 msgstr "Systém súborov"
 
-#: pkg/storaged/crypto/keyslots.jsx:794
+#: pkg/storaged/crypto/keyslots.jsx:795
 msgid "No free key slots"
 msgstr "Žiadne volné sloty pre kľúče"
 
@@ -5470,7 +5473,7 @@ msgstr "Neboli nájdené žiadne kľúče stroja."
 msgid "No installation package found for this application."
 msgstr "Pre túto aplikáciu nebol nájdený žiaden inštalačný balíček."
 
-#: pkg/storaged/crypto/keyslots.jsx:719
+#: pkg/storaged/crypto/keyslots.jsx:720
 msgid "No keys added"
 msgstr "Žiadne pridané kľúče"
 
@@ -5648,7 +5651,7 @@ msgstr "Neoprávený k vykonaniu tejto akcie."
 msgid "Not ready"
 msgstr "Nepripravené"
 
-#: pkg/packagekit/updates.jsx:1463
+#: pkg/packagekit/updates.jsx:1354
 msgid "Not registered"
 msgstr "Nezaregistrované"
 
@@ -5707,7 +5710,7 @@ msgstr "Výskyty"
 msgid "Ok"
 msgstr "Ok"
 
-#: pkg/storaged/stratis/pool.jsx:895 pkg/storaged/crypto/keyslots.jsx:501
+#: pkg/storaged/stratis/pool.jsx:895 pkg/storaged/crypto/keyslots.jsx:502
 msgid "Old passphrase"
 msgstr "Pôvodná heslová fráza"
 
@@ -5835,19 +5838,19 @@ msgstr "Chýba balík cockpit-pcp a preto nie sú k dispozícií historické met
 msgid "PID"
 msgstr "Identifikátor procesu (PID)"
 
-#: pkg/packagekit/updates.jsx:686 pkg/packagekit/updates.jsx:764
+#: pkg/packagekit/updates.jsx:674 pkg/packagekit/updates.jsx:752
 msgid "Package information"
 msgstr "Informácie o balíku"
 
-#: pkg/lib/packagekit.js:130
+#: pkg/lib/packagekit.js:135
 msgid "PackageKit crashed"
 msgstr "PackageKit zhavaroval"
 
-#: pkg/packagekit/updates.jsx:1172
+#: pkg/packagekit/updates.jsx:1160
 msgid "PackageKit is not installed"
 msgstr "PackageKit nie je nainštalovaný"
 
-#: pkg/packagekit/updates.jsx:1400
+#: pkg/packagekit/updates.jsx:1291
 msgid "PackageKit reported error code $0"
 msgstr "PackageKit ohlásil chybový kód $0"
 
@@ -5855,7 +5858,7 @@ msgstr "PackageKit ohlásil chybový kód $0"
 msgid "Packageless session unavailable"
 msgstr ""
 
-#: pkg/packagekit/updates.jsx:355
+#: pkg/packagekit/updates.jsx:344
 msgid "Packages"
 msgstr "Balíčky"
 
@@ -5916,13 +5919,13 @@ msgstr "Pasívny"
 #: pkg/storaged/stratis/pool.jsx:785 pkg/storaged/stratis/pool.jsx:870
 #: pkg/storaged/block/format-dialog.jsx:336
 #: pkg/storaged/block/format-dialog.jsx:364
-#: pkg/storaged/crypto/keyslots.jsx:449 pkg/storaged/crypto/keyslots.jsx:757
+#: pkg/storaged/crypto/keyslots.jsx:450 pkg/storaged/crypto/keyslots.jsx:758
 #: pkg/storaged/crypto/actions.jsx:42
 #: pkg/storaged/filesystem/mounting-dialog.jsx:341
 msgid "Passphrase"
 msgstr "Heslová fráza"
 
-#: pkg/storaged/crypto/keyslots.jsx:592
+#: pkg/storaged/crypto/keyslots.jsx:593
 msgid "Passphrase can not be empty"
 msgstr "Heslová fráza nemôže byť prázdna"
 
@@ -5930,23 +5933,23 @@ msgstr "Heslová fráza nemôže byť prázdna"
 #: pkg/storaged/stratis/pool.jsx:871 pkg/storaged/stratis/pool.jsx:898
 #: pkg/storaged/stratis/pool.jsx:901 pkg/storaged/block/format-dialog.jsx:340
 #: pkg/storaged/block/format-dialog.jsx:368
-#: pkg/storaged/crypto/keyslots.jsx:181 pkg/storaged/crypto/keyslots.jsx:457
-#: pkg/storaged/crypto/keyslots.jsx:502 pkg/storaged/crypto/keyslots.jsx:506
+#: pkg/storaged/crypto/keyslots.jsx:181 pkg/storaged/crypto/keyslots.jsx:458
+#: pkg/storaged/crypto/keyslots.jsx:503 pkg/storaged/crypto/keyslots.jsx:507
 #: pkg/storaged/filesystem/mounting-dialog.jsx:344
 msgid "Passphrase cannot be empty"
 msgstr "Heslová fráza nemôže byť prázdna"
 
-#: pkg/storaged/crypto/keyslots.jsx:614
+#: pkg/storaged/crypto/keyslots.jsx:615
 msgid "Passphrase from any other key slot"
 msgstr "Heslová fráza z ľubovoľného iného slotu s kľúčom"
 
-#: pkg/storaged/stratis/pool.jsx:929 pkg/storaged/crypto/keyslots.jsx:605
+#: pkg/storaged/stratis/pool.jsx:929 pkg/storaged/crypto/keyslots.jsx:606
 msgid "Passphrase removal may prevent unlocking $0."
 msgstr "Zmazanie heslovej fráze môže brániť odomknutiu $0."
 
 #: pkg/storaged/stratis/create-dialog.jsx:124 pkg/storaged/stratis/pool.jsx:873
 #: pkg/storaged/stratis/pool.jsx:903 pkg/storaged/block/format-dialog.jsx:349
-#: pkg/storaged/crypto/keyslots.jsx:466 pkg/storaged/crypto/keyslots.jsx:511
+#: pkg/storaged/crypto/keyslots.jsx:467 pkg/storaged/crypto/keyslots.jsx:512
 msgid "Passphrases do not match"
 msgstr "Heslové frázy sa líšia"
 
@@ -6146,7 +6149,7 @@ msgstr "Fyzické zväzky"
 msgid "Physical volumes can not be resized here"
 msgstr "Tu nie je možné meniť veľkosti fyzických zväzkov"
 
-#: pkg/systemd/timer-dialog.jsx:338 pkg/lib/serverTime.js:595
+#: pkg/systemd/timer-dialog.jsx:338 pkg/lib/serverTime.js:596
 #: pkg/lib/cockpit-components-shutdown.jsx:208
 #: pkg/users/expiration-dialogs.js:48
 msgid "Pick date"
@@ -6194,7 +6197,7 @@ msgstr ""
 "Pridanie servera s kľúčmi vyžaduje odomknutie poolu. Zadajte súčasnú heslovú "
 "frázu k poolu."
 
-#: pkg/packagekit/updates.jsx:1587
+#: pkg/packagekit/updates.jsx:1478
 msgid "Please resolve the issue and reload this page."
 msgstr "Prosím, vyriešte problém a načítajte túto stránku znovu."
 
@@ -6253,11 +6256,11 @@ msgstr ""
 msgid "PowerPC PReP boot partition"
 msgstr "Štartovací oddiel PReP architektúry PowerPC"
 
-#: pkg/networkmanager/ip-settings.jsx:98
+#: pkg/networkmanager/ip-settings.jsx:100
 msgid "Prefix length"
 msgstr "Dĺžka eor"
 
-#: pkg/networkmanager/ip-settings.jsx:98
+#: pkg/networkmanager/ip-settings.jsx:100
 msgid "Prefix length or netmask"
 msgstr "Dĺžka predpony alebo maska siete"
 
@@ -6512,16 +6515,16 @@ msgstr "Znovu použiť a reštartovať"
 msgid "Reboot"
 msgstr "Reštartovať"
 
-#: pkg/packagekit/updates.jsx:606
+#: pkg/packagekit/updates.jsx:594
 msgid "Reboot after completion"
 msgstr "Po dokončení reštartovať"
 
-#: pkg/packagekit/updates.jsx:1619
+#: pkg/packagekit/updates.jsx:1510
 msgid "Reboot recommended"
 msgstr "Odporúčaný reštart"
 
-#: pkg/packagekit/updates.jsx:675 pkg/packagekit/updates.jsx:755
-#: pkg/packagekit/updates.jsx:819
+#: pkg/packagekit/updates.jsx:663 pkg/packagekit/updates.jsx:743
+#: pkg/packagekit/updates.jsx:807
 msgid "Reboot system..."
 msgstr "Reštartovať systém…"
 
@@ -6565,11 +6568,11 @@ msgstr "Obnovujem spojenie"
 msgid "Regenerate"
 msgstr "Znovu vytvoriť"
 
-#: pkg/storaged/crypto/keyslots.jsx:314
+#: pkg/storaged/crypto/keyslots.jsx:315
 msgid "Regenerating initrd"
 msgstr "Znovuvytváram initrd"
 
-#: pkg/packagekit/updates.jsx:1474
+#: pkg/packagekit/updates.jsx:1365
 msgid "Register…"
 msgstr "Registrovať…"
 
@@ -6597,7 +6600,7 @@ msgstr "Znovu načítať propagované z"
 msgid "Reloading"
 msgstr "Opätovne načítam"
 
-#: pkg/packagekit/updates.jsx:501
+#: pkg/packagekit/updates.jsx:489
 msgid "Reloading the state of remaining services"
 msgstr "Opätovne zisťujem stav zostávajúcich služieb"
 
@@ -6642,8 +6645,8 @@ msgstr "Odstránenia:"
 #: pkg/storaged/stratis/pool.jsx:715 pkg/storaged/stratis/pool.jsx:742
 #: pkg/storaged/stratis/pool.jsx:792 pkg/storaged/stratis/pool.jsx:803
 #: pkg/storaged/stratis/pool.jsx:814 pkg/storaged/stratis/pool.jsx:933
-#: pkg/storaged/stratis/pool.jsx:979 pkg/storaged/crypto/keyslots.jsx:634
-#: pkg/storaged/crypto/keyslots.jsx:669 pkg/storaged/crypto/keyslots.jsx:745
+#: pkg/storaged/stratis/pool.jsx:979 pkg/storaged/crypto/keyslots.jsx:635
+#: pkg/storaged/crypto/keyslots.jsx:670 pkg/storaged/crypto/keyslots.jsx:746
 #: pkg/storaged/nfs/nfs.jsx:315 pkg/storaged/mdraid/mdraid-disk.jsx:101
 #: pkg/storaged/lvm2/volume-group.jsx:329
 #: pkg/storaged/lvm2/physical-volume.jsx:91 pkg/systemd/timer-dialog.jsx:352
@@ -6661,7 +6664,7 @@ msgstr "Odobrať $0"
 msgid "Remove $0 service from $1 zone"
 msgstr "Odstrániť službu $0 zo zóny $1"
 
-#: pkg/storaged/stratis/pool.jsx:974 pkg/storaged/crypto/keyslots.jsx:653
+#: pkg/storaged/stratis/pool.jsx:974 pkg/storaged/crypto/keyslots.jsx:654
 msgid "Remove $0?"
 msgstr "Odobrať $0?"
 
@@ -6671,7 +6674,7 @@ msgstr "Odobrať $0?"
 msgid "Remove Clevis token?"
 msgstr "Odstrániť zariadenie"
 
-#: pkg/storaged/stratis/pool.jsx:972 pkg/storaged/crypto/keyslots.jsx:663
+#: pkg/storaged/stratis/pool.jsx:972 pkg/storaged/crypto/keyslots.jsx:664
 msgid "Remove Tang keyserver?"
 msgstr "Odstrániť Tang server s kľúčami?"
 
@@ -6683,10 +6686,10 @@ msgstr "Odstrániť zariadenie"
 msgid "Remove host"
 msgstr "Odstrániť hostiteľa"
 
-#: pkg/networkmanager/ip-settings.jsx:238
-#: pkg/networkmanager/ip-settings.jsx:293
-#: pkg/networkmanager/ip-settings.jsx:339
-#: pkg/networkmanager/ip-settings.jsx:409
+#: pkg/networkmanager/ip-settings.jsx:283
+#: pkg/networkmanager/ip-settings.jsx:338
+#: pkg/networkmanager/ip-settings.jsx:384
+#: pkg/networkmanager/ip-settings.jsx:454
 msgid "Remove item"
 msgstr "Odstrániť položku"
 
@@ -6694,7 +6697,7 @@ msgstr "Odstrániť položku"
 msgid "Remove missing physical volumes?"
 msgstr "Odstrániť chýbajúce fyzické zväzky?"
 
-#: pkg/storaged/crypto/keyslots.jsx:627
+#: pkg/storaged/crypto/keyslots.jsx:628
 msgid "Remove passphrase in key slot $0?"
 msgstr "Odobrať heslovú frázu v slote pre kľúč $0?"
 
@@ -6731,7 +6734,7 @@ msgstr ""
 msgid "Removing $target from MDRAID device"
 msgstr "Odstraňujem $target zo zariadenia MDRAID"
 
-#: pkg/storaged/crypto/keyslots.jsx:612
+#: pkg/storaged/crypto/keyslots.jsx:613
 msgid ""
 "Removing a passphrase without confirmation of another passphrase may prevent "
 "unlocking or key management, if other passphrases are forgotten or lost."
@@ -6820,8 +6823,8 @@ msgstr "Opakovať"
 msgid "Repeat monthly"
 msgstr "Opakovať každý mesiac"
 
-#: pkg/storaged/crypto/keyslots.jsx:447 pkg/storaged/crypto/keyslots.jsx:460
-#: pkg/storaged/crypto/keyslots.jsx:509
+#: pkg/storaged/crypto/keyslots.jsx:448 pkg/storaged/crypto/keyslots.jsx:461
+#: pkg/storaged/crypto/keyslots.jsx:510
 msgid "Repeat passphrase"
 msgstr "Zopakujte heslovú frázu"
 
@@ -6916,15 +6919,15 @@ msgstr ""
 msgid "Restart"
 msgstr "Reštart"
 
-#: pkg/packagekit/updates.jsx:516 pkg/packagekit/updates.jsx:535
+#: pkg/packagekit/updates.jsx:504 pkg/packagekit/updates.jsx:523
 msgid "Restart services"
 msgstr "Reštartovať služby"
 
-#: pkg/packagekit/updates.jsx:756 pkg/packagekit/updates.jsx:831
+#: pkg/packagekit/updates.jsx:744 pkg/packagekit/updates.jsx:819
 msgid "Restart services..."
 msgstr "Reštartovať služby..."
 
-#: pkg/packagekit/updates.jsx:1667
+#: pkg/packagekit/updates.jsx:1558
 msgid "Restarting"
 msgstr "Reštartujem"
 
@@ -6970,7 +6973,7 @@ msgstr "Kontrolujem záznamy udalostí"
 msgid "Round robin"
 msgstr "Round robin"
 
-#: pkg/networkmanager/ip-settings.jsx:350
+#: pkg/networkmanager/ip-settings.jsx:395
 msgid "Routes"
 msgstr "Trasy"
 
@@ -7127,8 +7130,8 @@ msgstr "Soboty"
 #: pkg/metrics/metrics.jsx:1501 pkg/storaged/stratis/pool.jsx:877
 #: pkg/storaged/stratis/pool.jsx:906 pkg/storaged/stratis/pool.jsx:954
 #: pkg/storaged/btrfs/volume.jsx:152 pkg/storaged/crypto/encryption.jsx:169
-#: pkg/storaged/crypto/encryption.jsx:196 pkg/storaged/crypto/keyslots.jsx:516
-#: pkg/storaged/crypto/keyslots.jsx:535 pkg/storaged/nfs/nfs.jsx:188
+#: pkg/storaged/crypto/encryption.jsx:196 pkg/storaged/crypto/keyslots.jsx:517
+#: pkg/storaged/crypto/keyslots.jsx:536 pkg/storaged/nfs/nfs.jsx:188
 #: pkg/storaged/partitions/partition.jsx:197
 #: pkg/storaged/filesystem/filesystem.jsx:126
 #: pkg/storaged/filesystem/mounting-dialog.jsx:358
@@ -7154,8 +7157,8 @@ msgstr "Šetriť priestor kompresiou jednotlivých blokov pomocou LZ4"
 msgid "Save space by storing identical data blocks just once"
 msgstr "Šetriť priestor ukladaním rovnakých dátových blokov iba raz"
 
-#: pkg/storaged/crypto/keyslots.jsx:420 pkg/storaged/crypto/keyslots.jsx:475
-#: pkg/storaged/crypto/keyslots.jsx:533 pkg/storaged/crypto/keyslots.jsx:561
+#: pkg/storaged/crypto/keyslots.jsx:421 pkg/storaged/crypto/keyslots.jsx:476
+#: pkg/storaged/crypto/keyslots.jsx:534 pkg/storaged/crypto/keyslots.jsx:562
 msgid ""
 "Saving a new passphrase requires unlocking the disk. Please provide a "
 "current disk passphrase."
@@ -7179,7 +7182,7 @@ msgstr "Počítač so zapäčatenou skriňou"
 msgid "Search"
 msgstr "Hľadať"
 
-#: pkg/networkmanager/ip-settings.jsx:327
+#: pkg/networkmanager/ip-settings.jsx:372
 msgid "Search domain"
 msgstr "Prehľadávané domény"
 
@@ -7211,7 +7214,7 @@ msgstr "Bezpečne mažem $target"
 msgid "Security Enhanced Linux configuration and troubleshooting"
 msgstr "Nastavenie SELinuxu a riešenie problémov"
 
-#: pkg/packagekit/updates.jsx:1530
+#: pkg/packagekit/updates.jsx:1421
 msgid "Security updates available"
 msgstr "Sú k dispozícií bezpečnostné aktualizácie"
 
@@ -7233,7 +7236,7 @@ msgstr "Vybrať"
 msgid "Select an option"
 msgstr "Vybrať identifikátor"
 
-#: pkg/networkmanager/ip-settings.jsx:197
+#: pkg/networkmanager/ip-settings.jsx:242
 msgid "Select method"
 msgstr "Vybrať metódu"
 
@@ -7267,7 +7270,7 @@ msgstr "Sériové číslo"
 
 #: pkg/static/login.html:173 pkg/storaged/nfs/nfs.jsx:328
 #: pkg/kdump/kdump-view.jsx:257 pkg/kdump/kdump-view.jsx:281
-#: pkg/networkmanager/ip-settings.jsx:281
+#: pkg/networkmanager/ip-settings.jsx:326
 msgid "Server"
 msgstr "Server"
 
@@ -7386,15 +7389,15 @@ msgstr "Nastavujem"
 msgid "Setting up loop device $target"
 msgstr "Nastavujem zariadenie spätnej slučky $target"
 
-#: pkg/packagekit/updates.jsx:914
+#: pkg/packagekit/updates.jsx:902
 msgid "Settings"
 msgstr "Nastavenia"
 
-#: pkg/packagekit/updates.jsx:366 pkg/packagekit/updates.jsx:441
+#: pkg/packagekit/updates.jsx:355 pkg/packagekit/updates.jsx:429
 msgid "Severity"
 msgstr "Závažnosť"
 
-#: pkg/networkmanager/ip-settings.jsx:45
+#: pkg/networkmanager/ip-settings.jsx:47
 msgid "Shared"
 msgstr "Zdieľané"
 
@@ -7524,7 +7527,7 @@ msgstr "Preskočiť na bo"
 msgid "Slot"
 msgstr "Slot"
 
-#: pkg/storaged/stratis/pool.jsx:824 pkg/storaged/crypto/keyslots.jsx:734
+#: pkg/storaged/stratis/pool.jsx:824 pkg/storaged/crypto/keyslots.jsx:735
 #: pkg/storaged/mdraid/mdraid-disk.jsx:83
 msgid "Slot $0"
 msgstr "Slot $0"
@@ -7588,8 +7591,8 @@ msgid ""
 "Some other program is currently using the package manager, please wait..."
 msgstr "Správcu balíčkov aktuálne používa iný program, počkajte prosím…"
 
-#: pkg/packagekit/updates.jsx:733 pkg/packagekit/updates.jsx:839
-#: pkg/packagekit/updates.jsx:1630
+#: pkg/packagekit/updates.jsx:721 pkg/packagekit/updates.jsx:827
+#: pkg/packagekit/updates.jsx:1521
 msgid "Some software needs to be restarted manually"
 msgstr "Nejaký softvér je potrebné reštartovať ručne"
 
@@ -7683,7 +7686,7 @@ msgstr "Stav"
 msgid "Static"
 msgstr "Statická"
 
-#: pkg/systemd/service-details.jsx:666 pkg/packagekit/updates.jsx:903
+#: pkg/systemd/service-details.jsx:666 pkg/packagekit/updates.jsx:891
 #: pkg/networkmanager/network-interface.jsx:266
 msgid "Status"
 msgstr "Stav"
@@ -7948,7 +7951,7 @@ msgstr "TCP"
 msgid "Tablet"
 msgstr "Tablet"
 
-#: pkg/storaged/crypto/keyslots.jsx:450
+#: pkg/storaged/crypto/keyslots.jsx:451
 msgid "Tang keyserver"
 msgstr "Tang server s kľúčami"
 
@@ -8021,7 +8024,7 @@ msgid "The $0 package must be installed to create Stratis pools."
 msgstr ""
 "Na vytvorenie Stratis poolu je potrebné, aby bol nainštalovaný balíček $0."
 
-#: pkg/storaged/crypto/keyslots.jsx:274 pkg/storaged/crypto/keyslots.jsx:290
+#: pkg/storaged/crypto/keyslots.jsx:274 pkg/storaged/crypto/keyslots.jsx:291
 msgid "The $0 package must be installed."
 msgstr "Je potrebné nainštalovať balíček $0."
 
@@ -8092,7 +8095,7 @@ msgstr ""
 "Vytváranie tohoto VDO zariadenia nedokončilo a toto zariadenie nemôže byť "
 "použité."
 
-#: pkg/storaged/crypto/keyslots.jsx:715
+#: pkg/storaged/crypto/keyslots.jsx:716
 msgid ""
 "The currently logged in user is not permitted to see information about keys."
 msgstr "Prihlásený užívateľ nie je oprávnený zobrazovať informácie o kľúčoch."
@@ -8175,7 +8178,7 @@ msgstr ""
 msgid "The fingerprint should match:"
 msgstr "Odtlačok by sa mal zhodovať:"
 
-#: pkg/packagekit/updates.jsx:506
+#: pkg/packagekit/updates.jsx:494
 msgid "The following service will be restarted:"
 msgid_plural "The following services will be restarted:"
 msgstr[0] "Je potrebné reštartovať nasledujúcu službu:"
@@ -8206,7 +8209,7 @@ msgstr ""
 "Domovský adresár $0 už existuje. Jej vlastníctvo bude zmenená na nového "
 "používateľa."
 
-#: pkg/storaged/crypto/keyslots.jsx:311
+#: pkg/storaged/crypto/keyslots.jsx:312
 msgid "The initrd must be regenerated."
 msgstr "Je potrebné znovu vytvoriť initrd."
 
@@ -8227,7 +8230,7 @@ msgstr "Zadaný kľúč nie je platný."
 msgid "The keyserver at $0 must be reachable."
 msgstr ""
 
-#: pkg/storaged/crypto/keyslots.jsx:746
+#: pkg/storaged/crypto/keyslots.jsx:747
 msgid "The last key slot can not be removed"
 msgstr "Posledný slot kľúča nemôže byť odobraný"
 
@@ -8307,7 +8310,7 @@ msgstr ""
 msgid "The server refused to authenticate using any supported methods."
 msgstr "Server odmietol overovanie pri všetkých podporovaných metódach."
 
-#: pkg/storaged/crypto/keyslots.jsx:410
+#: pkg/storaged/crypto/keyslots.jsx:411
 msgid ""
 "The system does not currently support unlocking a filesystem with a Tang "
 "keyserver during boot."
@@ -8315,7 +8318,7 @@ msgstr ""
 "Systém v tejto chvíli nepodporuje odomykanie systému súborov pomocou Tang "
 "servera s kľúčmi v priebehu štartu systému."
 
-#: pkg/storaged/crypto/keyslots.jsx:409
+#: pkg/storaged/crypto/keyslots.jsx:410
 msgid ""
 "The system does not currently support unlocking the root filesystem with a "
 "Tang keyserver."
@@ -8393,7 +8396,7 @@ msgstr ""
 msgid "There was an unexpected error while connecting to the machine."
 msgstr "Pri pripojovaní k stroji sa vyskytla neočakávaná chyba."
 
-#: pkg/storaged/crypto/keyslots.jsx:414
+#: pkg/storaged/crypto/keyslots.jsx:415
 msgid "These additional steps are necessary:"
 msgstr "Sú potrebné tieto ďalšie kroky:"
 
@@ -8525,7 +8528,7 @@ msgstr ""
 msgid "This pool is in a degraded state."
 msgstr "Tento pool sa nachádza v degradovanom stave."
 
-#: pkg/packagekit/updates.jsx:1470
+#: pkg/packagekit/updates.jsx:1361
 msgid "This system is not registered"
 msgstr "Tento systém nie je zaregistrovaný"
 
@@ -8667,7 +8670,7 @@ msgstr "Vrstva (tier)"
 msgid "Time"
 msgstr "Čas"
 
-#: pkg/packagekit/updates.jsx:596
+#: pkg/packagekit/updates.jsx:584
 msgid "Time remaining: "
 msgstr ""
 
@@ -8704,7 +8707,7 @@ msgstr ""
 "Aby ste zaistili, že do vášho pripojenia nie je zasahované záškodníckou "
 "treťou stranou, overte odtlačok kľúča hostiteľa:"
 
-#: pkg/packagekit/updates.jsx:1472
+#: pkg/packagekit/updates.jsx:1363
 msgid ""
 "To get software updates, this system needs to be registered with Red Hat, "
 "either using the Red Hat Customer Portal or a local subscription server."
@@ -8730,7 +8733,7 @@ msgstr "Dnes"
 msgid "Toggle"
 msgstr "Prepnúť"
 
-#: pkg/systemd/timer-dialog.jsx:339 pkg/lib/serverTime.js:596
+#: pkg/systemd/timer-dialog.jsx:339 pkg/lib/serverTime.js:597
 #: pkg/lib/cockpit-components-shutdown.jsx:209
 #: pkg/users/expiration-dialogs.js:49
 msgid "Toggle date picker"
@@ -8800,7 +8803,7 @@ msgstr "Riešiť problém…"
 msgid "Trust and add host"
 msgstr "Dôverovať a pridať hostiteľa"
 
-#: pkg/storaged/stratis/utils.jsx:86 pkg/storaged/crypto/keyslots.jsx:563
+#: pkg/storaged/stratis/utils.jsx:86 pkg/storaged/crypto/keyslots.jsx:564
 msgid "Trust key"
 msgstr "Dôveryhodný kľúč"
 
@@ -8983,12 +8986,18 @@ msgstr "Nepodarilo sa odpojiť systém súborov"
 msgid "Unavailable packages"
 msgstr "Nedostupné balíčky"
 
+#: pkg/systemd/overview-cards/uncleanShutdownStatus.jsx:80
+msgid "Unclean shutdown"
+msgstr ""
+
 #: pkg/users/account-details.js:450
 msgid "Undo"
 msgstr "Späť"
 
-#: pkg/storaged/crypto/keyslots.jsx:295
-msgid "Unexpected PackageKit error during installation of $0: $1"
+#: pkg/storaged/crypto/keyslots.jsx:296
+#, fuzzy
+#| msgid "Unexpected PackageKit error during installation of $0: $1"
+msgid "Unexpected PackageManager error during installation of $0: $1"
 msgstr "Neočakávaná chyba PackageKit v priebehu inštalácie $0: $1"
 
 #: pkg/shell/shell-modals.tsx:201 pkg/networkmanager/interfaces.js:50
@@ -9055,7 +9064,7 @@ msgstr "Neznámy názov stroja"
 msgid "Unknown service name"
 msgstr "Neznámy názov služby"
 
-#: pkg/storaged/crypto/keyslots.jsx:767
+#: pkg/storaged/crypto/keyslots.jsx:768
 msgid "Unknown type"
 msgstr "Neznámy typ"
 
@@ -9158,25 +9167,25 @@ msgstr "Beží od"
 msgid "Update"
 msgstr "Aktualizovať"
 
-#: pkg/packagekit/updates.jsx:749
+#: pkg/packagekit/updates.jsx:737
 msgid "Update Success Table"
 msgstr "Tabuľka úspechov aktualizácií"
 
-#: pkg/packagekit/updates.jsx:952
+#: pkg/packagekit/updates.jsx:940
 msgid "Update history"
 msgstr "História aktualizácií"
 
-#: pkg/apps/application-list.jsx:154
+#: pkg/apps/application-list.jsx:153
 msgid "Update package information"
 msgstr "Aktualizovať informácie o balíčkoch"
 
-#: pkg/packagekit/updates.jsx:596
+#: pkg/packagekit/updates.jsx:584
 #, fuzzy
 #| msgid "Update log"
 msgid "Update progress"
 msgstr "Záznam udalosti aktualizácie"
 
-#: pkg/packagekit/updates.jsx:681 pkg/packagekit/updates.jsx:745
+#: pkg/packagekit/updates.jsx:669 pkg/packagekit/updates.jsx:733
 msgid "Update was successful"
 msgstr "Aktualizácia bola úspešná"
 
@@ -9184,12 +9193,12 @@ msgstr "Aktualizácia bola úspešná"
 msgid "Updated"
 msgstr "Aktualizované"
 
-#: pkg/packagekit/updates.jsx:671
+#: pkg/packagekit/updates.jsx:659
 msgid "Updated packages may require a reboot to take effect."
 msgstr ""
 "Aby sa zmeny prejavili, aktualizovaný balíček môže vyžadovať reštart systému."
 
-#: pkg/packagekit/updates.jsx:1536
+#: pkg/packagekit/updates.jsx:1427
 msgid "Updates available"
 msgstr "Sú dostupné aktualizácie"
 
@@ -9362,7 +9371,7 @@ msgstr "Overené"
 msgid "Verify fingerprint"
 msgstr "Overiť odtlačok"
 
-#: pkg/storaged/stratis/utils.jsx:83 pkg/storaged/crypto/keyslots.jsx:559
+#: pkg/storaged/stratis/utils.jsx:83 pkg/storaged/crypto/keyslots.jsx:560
 msgid "Verify key"
 msgstr "Overiť kľúč"
 
@@ -9370,7 +9379,7 @@ msgstr "Overiť kľúč"
 msgid "Verifying"
 msgstr "Overujem"
 
-#: pkg/systemd/hwinfo.jsx:93 pkg/packagekit/updates.jsx:440
+#: pkg/systemd/hwinfo.jsx:93 pkg/packagekit/updates.jsx:428
 msgid "Version"
 msgstr "Verzia"
 
@@ -9416,6 +9425,7 @@ msgid "View login history"
 msgstr "Zobraziť históriu prihlásení"
 
 #: pkg/storaged/stratis/pool.jsx:657
+#: pkg/systemd/overview-cards/uncleanShutdownStatus.jsx:86
 msgid "View logs"
 msgstr "Zobraziť záznamy udalostí"
 
@@ -9431,7 +9441,7 @@ msgstr "Zobraziť toky dát pre jednotlivé disky"
 msgid "View project website"
 msgstr "Webové stránky projektu"
 
-#: pkg/packagekit/updates.jsx:611
+#: pkg/packagekit/updates.jsx:599
 msgid "View update log"
 msgstr "Zobraziť záznamy udalostí o aktualizácii"
 
@@ -9525,7 +9535,7 @@ msgstr "Webová konzola"
 msgid "Web Console for Linux servers"
 msgstr "Webová konzola pre linuxové servery"
 
-#: pkg/packagekit/updates.jsx:526 pkg/packagekit/updates.jsx:930
+#: pkg/packagekit/updates.jsx:514 pkg/packagekit/updates.jsx:918
 msgid "Web Console will restart"
 msgstr "Webová konzola sa reštartuje"
 
@@ -9557,7 +9567,7 @@ msgstr "Kedy"
 msgid "When empty, connect with the current user"
 msgstr "Ak je prázdne, pripojíte sa ako aktuálny používateľ"
 
-#: pkg/packagekit/updates.jsx:529 pkg/packagekit/updates.jsx:935
+#: pkg/packagekit/updates.jsx:517 pkg/packagekit/updates.jsx:923
 msgid ""
 "When the Web Console is restarted, you will no longer see progress "
 "information. However, the update process will continue in the background. "
@@ -9675,7 +9685,7 @@ msgid "Your browser will remember your access level across sessions."
 msgstr ""
 "Váš prehliadač si bude úroveň prístupu pamätať aj pre budúce spustenia."
 
-#: pkg/packagekit/updates.jsx:1669
+#: pkg/packagekit/updates.jsx:1560
 msgid ""
 "Your server will close the connection soon. You can reconnect after it has "
 "restarted."
@@ -9806,7 +9816,7 @@ msgstr "podzväzky btrfs"
 msgid "btrfs volume"
 msgstr "zväzok btrfs"
 
-#: pkg/packagekit/updates.jsx:207 pkg/packagekit/updates.jsx:310
+#: pkg/packagekit/updates.jsx:196 pkg/packagekit/updates.jsx:299
 msgid "bug fix"
 msgstr "oprava chyby"
 
@@ -9939,7 +9949,7 @@ msgstr "šifrované"
 msgid "encryption"
 msgstr "Šifrovanie"
 
-#: pkg/packagekit/updates.jsx:209 pkg/packagekit/updates.jsx:310
+#: pkg/packagekit/updates.jsx:198 pkg/packagekit/updates.jsx:299
 msgid "enhancement"
 msgstr "vylepšenie"
 
@@ -10056,6 +10066,12 @@ msgstr "Jednotky iSCSI"
 #: pkg/storaged/iscsi/session.jsx:45
 msgid "iSCSI portal"
 msgstr "Portál iSCSI"
+
+#: pkg/apps/application-list.jsx:81
+#, fuzzy
+#| msgid "Switch of $0"
+msgid "icon of $0"
+msgstr "Vypnúť $0"
 
 #: pkg/storaged/filesystem/utils.jsx:179
 msgid "ignore failure"
@@ -10284,7 +10300,7 @@ msgstr "heslo"
 msgid "password quality"
 msgstr "kvalita hesla"
 
-#: pkg/packagekit/updates.jsx:335
+#: pkg/packagekit/updates.jsx:324
 msgid "patches"
 msgstr "záplaty"
 
@@ -10376,7 +10392,7 @@ msgstr "role"
 msgid "running $0"
 msgstr "beží na $0"
 
-#: pkg/packagekit/updates.jsx:205 pkg/packagekit/updates.jsx:302
+#: pkg/packagekit/updates.jsx:194 pkg/packagekit/updates.jsx:291
 #: pkg/packagekit/manifest.json:0
 msgid "security"
 msgstr "zabezpečenie"
@@ -10441,7 +10457,7 @@ msgstr "sos"
 msgid "sos report failed"
 msgstr "Nahlasovanie problému zlyhalo"
 
-#: pkg/users/manifest.json:0 pkg/systemd/manifest.json:0
+#: pkg/systemd/manifest.json:0 pkg/users/manifest.json:0
 msgid "ssh"
 msgstr "ssh"
 
@@ -10593,9 +10609,6 @@ msgstr "zóna"
 
 #~ msgid "Change iSCSI initiater name"
 #~ msgstr "Zmeniť názov iSCSI iniciátora"
-
-#~ msgid "Switch of $0"
-#~ msgstr "Vypnúť $0"
 
 #, fuzzy
 #~| msgid "Actions"

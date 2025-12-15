@@ -40,6 +40,9 @@ echo 'Core(s) per socket:  4'
 echo 'Socket(s):           1'
 """
 
+# Helper for MB size when handling raw bytes.
+MB = 1024**2
+
 
 def ssh_reconnect(machine, timeout_sec=120):
     start_time = time.time()
@@ -141,7 +144,7 @@ class TestSystemInfo(testlib.MachineCase):
         b.wait_not_in_text("#system_information_ssh_keys .pf-v6-c-list", new_alt)
         b.wait_in_text("#system_information_ssh_keys .pf-v6-c-list", old_alt)
 
-        b.click('#system_information_ssh_keys button:contains("Close")')
+        b.click("#system_information_ssh_keys button:contains('Close')")
         b.wait_not_present("#system_information_ssh_keys")
 
         # Change ssh config and restart
@@ -162,7 +165,7 @@ class TestSystemInfo(testlib.MachineCase):
         b.wait_in_text('#system_information_os_text',
                        "Foobar Adventure Linux Server 2.0 (Day of Doom)")
 
-        b.click('#system_information_ssh_keys button:contains("Close")')
+        b.click("#system_information_ssh_keys button:contains('Close')")
         b.wait_not_present("#system_information_ssh_keys")
 
         m.execute("hostnamectl set-hostname --static --pretty 'Adventure Box'")
@@ -504,7 +507,7 @@ machine         : 8561
                     b.wait_in_text('#hwinfo-system-info-list', "CPU")
                     b.wait_not_in_text('#hwinfo-system-info-list', "CPU security")
                 else:
-                    b.click('#hwinfo button:contains(Mitigations)')
+                    b.click('#hwinfo button:contains("Mitigations")')
 
                 if expect_smt_state is not None:
                     b.wait_in_text('#cpu-mitigations-dialog .nosmt-heading', 'nosmt')
@@ -537,11 +540,11 @@ machine         : 8561
 
         # Switch nosmt option
         self.login_and_go('/system/hwinfo')
-        b.click('#hwinfo button:contains(Mitigations)')
+        b.click('#hwinfo button:contains("Mitigations")')
         b.click('#cpu-mitigations-dialog #nosmt-switch input')
         b.wait_visible('#cpu-mitigations-dialog #nosmt-switch input' +
                        (':not(:checked)' if self.expect_smt_default else ':checked'))
-        b.click('#cpu-mitigations-dialog Button:contains(Save and reboot)')
+        b.click('#cpu-mitigations-dialog Button:contains("Save and reboot")')
 
         self.wait_reboot()
         if self.expect_smt_default:
@@ -580,14 +583,14 @@ fi
 
         # Switch back nosmt option
         self.login_and_go('/system/hwinfo')
-        b.click('#hwinfo button:contains(Mitigations)')
+        b.click('#hwinfo button:contains("Mitigations")')
         b.wait_in_text('#cpu-mitigations-dialog .nosmt-heading', 'nosmt')
         b.wait_visible('#cpu-mitigations-dialog #nosmt-switch input' +
                        (':not(:checked)' if self.expect_smt_default else ':checked'))
         b.click('#cpu-mitigations-dialog #nosmt-switch input')
         b.wait_visible('#cpu-mitigations-dialog #nosmt-switch input' +
                        (':checked' if self.expect_smt_default else ':not(:checked)'))
-        b.click('#cpu-mitigations-dialog Button:contains(Save and reboot)')
+        b.click('#cpu-mitigations-dialog Button:contains("Save and reboot")')
         self.wait_reboot()
         if self.expect_smt_default:
             self.assertIn('nosmt', m.execute('cat /proc/cmdline'))
@@ -601,12 +604,12 @@ fi
         m.execute("/tmp/kernelopt.sh set mitigations=auto,nosmt")
         self.reboot()
         self.login_and_go('/system/hwinfo')
-        b.click('#hwinfo button:contains(Mitigations)')
+        b.click('#hwinfo button:contains("Mitigations")')
         b.wait_in_text('#cpu-mitigations-dialog .nosmt-heading', 'nosmt')
         b.wait_visible('#cpu-mitigations-dialog #nosmt-switch input:checked')
         b.click('#cpu-mitigations-dialog #nosmt-switch input')
         b.wait_visible('#cpu-mitigations-dialog #nosmt-switch input:not(:checked)')
-        b.click('#cpu-mitigations-dialog Button:contains(Save and reboot)')
+        b.click('#cpu-mitigations-dialog Button:contains("Save and reboot")')
         self.wait_reboot()
         self.assertNotIn('nosmt', m.execute('cat /proc/cmdline'))
         self.assertIn('mitigations=auto', m.execute('cat /proc/cmdline'))
@@ -626,10 +629,10 @@ fi
         m.execute('[ ! -f /usr/sbin/grubby ] || mount --bind /tmp/grubby /usr/sbin/grubby')
         m.execute('systemctl stop rpm-ostreed.service || true; systemctl mask rpm-ostreed.service')
         self.login_and_go('/system/hwinfo')
-        b.click('#hwinfo button:contains(Mitigations)')
+        b.click('#hwinfo button:contains("Mitigations")')
         b.click('#cpu-mitigations-dialog #nosmt-switch input')
         b.wait_visible('#cpu-mitigations-dialog #nosmt-switch input:checked')
-        b.click('#cpu-mitigations-dialog Button:contains(Save and reboot)')
+        b.click("#cpu-mitigations-dialog Button:contains('Save and reboot')")
         b.wait_in_text('#cpu-mitigations-dialog .pf-v6-c-alert__title', 'No supported grub update mechanism found')
 
         self.allow_journal_messages('Sourcing file `/etc/default/grub.*',
@@ -648,27 +651,43 @@ fi
         m.execute("systemctl mask packagekit")
         self.addCleanup(m.execute, "systemctl unmask packagekit")
 
-        def progressValue(number):
+        def progressUsage(number):
             return b.get_pf_progress_value(f".system-usage tr:nth-child({number})")
+
+        def progressUsageRaw(number):
+            return b.get_raw_pf_progress_value(f".system-usage tr:nth-child({number})")
+
+        def cpuUsage(raw: bool = False):
+            if raw:
+                return progressUsageRaw(1)
+            else:
+                return progressUsage(1)
+
+        def memoryUsage(raw: bool = False):
+            if raw:
+                return progressUsageRaw(2)
+            else:
+                return progressUsage(2)
 
         self.login_and_go("/system")
 
         # CPU
         # first wait until system settles down
-        testlib.wait(lambda: progressValue(1) < 20)
+        testlib.wait(lambda: cpuUsage() < 20)
         m.spawn("for i in $(seq $(nproc)); do cat /dev/urandom > /dev/null & done; touch /tmp/cpu_hog", "cpu_hog.log")
         m.execute("while [ ! -e /tmp/cpu_hog ]; do sleep 1; done")
-        testlib.wait(lambda: progressValue(1) > 75)
+        testlib.wait(lambda: cpuUsage() > 75)
         m.execute("pkill -e -f [c]at.*urandom; rm -f /tmp/cpu_hog")
         # should go back to idle usage
         # HACK: work around pmie CPU usage https://bugzilla.redhat.com/show_bug.cgi?id=2140572
-        testlib.wait(lambda: progressValue(1) < 20, tries=200)
+        testlib.wait(lambda: cpuUsage() < 20, tries=200)
 
         # memory: our test machines should use a reasonable chunk of available memory; MiB or GiB
         b.wait_in_text(".system-usage tr:nth-child(2)", "iB")
-        initial_usage = progressValue(2)
-        self.assertGreater(initial_usage, 10)
-        self.assertLess(initial_usage, 80)
+        initial_usage = memoryUsage(raw=True)
+        max_memory = int(b.attr(".system-usage tr:nth-child(2) .pf-v6-c-progress__bar", "aria-valuemax"))
+        self.assertGreater(initial_usage, 10 * MB)
+        self.assertLess(initial_usage, max_memory * 0.9)
         # allocate an extra 200 MB; this may cause other stuff to get unmapped,
         # thus not exact addition, but usage should go up
         #
@@ -683,19 +702,19 @@ fi
             m.execute("while [ ! -e /tmp/hogged ]; do sleep 1; done")
             # bars update every 5s
             time.sleep(8)
-            testlib.wait(lambda: progressValue(2) >= initial_usage + 10)
-            hog_usage = progressValue(2)
+            testlib.wait(lambda: memoryUsage(raw=True) >= initial_usage + 10 * MB)
+            hog_usage = memoryUsage()
         finally:
             m.execute("kill %d" % mem_hog)
         # Should go back to initial_usage, but it doesn't always, for example on fedora.
         # So let's be happy if the usage drops significantly
         try:
-            testlib.wait(lambda: progressValue(2) <= hog_usage - 10)
+            testlib.wait(lambda: memoryUsage() <= hog_usage - 10)
         except testlib.Error:
-            print(f"Memory before hogging: {initial_usage}, after hogging: {hog_usage}, now: {progressValue(2)}")
+            print(f"Memory before hogging: {initial_usage}, after hogging: {hog_usage}, now: {memoryUsage()}")
             raise
 
-        self.assertGreater(progressValue(2), 10)
+        self.assertGreater(memoryUsage(), 10)
 
     @testlib.nondestructive
     def testShutdownStatus(self):
@@ -853,11 +872,11 @@ fi
 
 
 class TestSystemInfoTime(packagelib.PackageCase):
-    def set_change_time_dialog_mode(self, mode):
+    def set_change_time_dialog_mode(self, mode: str) -> None:
         b = self.browser
-        b.click("#system_information_change_systime .pf-v6-c-form__group-label:contains('Set time') + div > .pf-v6-c-menu-toggle")
+        b.click("#change_systime_btn")
         b.click(f"#change_systime button:contains('{mode}')")
-        b.wait_in_text("#system_information_change_systime .pf-v6-c-form__group-label:contains('Set time') + div > .pf-v6-c-menu-toggle", mode)
+        b.wait_in_text("#system_information_change_systime #change_systime_btn", mode)
 
     def testTime(self):
         m = self.machine
@@ -885,12 +904,14 @@ class TestSystemInfoTime(packagelib.PackageCase):
         b.wait_visible('#system_information_systime_button[disabled]')
 
         # Gain admin access
-        b.click(".pf-v6-c-alert:contains('Web console is running in limited access mode.') button:contains('Turn on')")
-        b.wait_in_text(".pf-v6-c-modal-box:contains('Switch to administrative access')", "Password for admin:")
-        b.set_input_text(".pf-v6-c-modal-box:contains('Switch to administrative access') input", "foobar")
+        b.wait_in_text(".ct-limited-access-alert", "Web console is running in limited access mode.")
+        b.click(".ct-limited-access-alert button")
+        b.wait_text(".pf-v6-c-modal-box__title-text", "Switch to administrative access")
+        b.wait_in_text(".pf-v6-c-modal-box", "Password for admin:")
+        b.set_input_text(".pf-v6-c-modal-box input", "foobar")
         b.click(".pf-v6-c-modal-box button:contains('Authenticate')")
-        b.wait_not_present(".pf-v6-c-modal-box:contains('Switch to administrative access')")
-        b.wait_not_present(".pf-v6-c-alert:contains('Web console is running in limited access mode.')")
+        b.wait_not_present(".pf-v6-c-modal-box")
+        b.wait_not_present(".ct-limited-access-alert")
 
         # Change the date
         b.click("#system_information_systime_button")
@@ -1102,7 +1123,7 @@ class TestSystemInfoTime(packagelib.PackageCase):
 
         b.click("#system_information_systime_button")
         b.wait_visible("#system_information_change_systime")
-        b.click("#system_information_change_systime .pf-v6-c-form__group-label:contains('Set time') + div > .pf-v6-c-menu-toggle")
+        b.click("#system_information_change_systime #change_systime_btn")
         b.wait_in_text("#change_systime", "Automatically using NTP")
         b.wait_not_present("#change_systime button:contains('Automatically using specific NTP servers')")
         b.wait_not_present("#change_systime button:contains('Automatically using additional NTP servers')")
