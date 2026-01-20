@@ -52,8 +52,9 @@
 %endif
 
 # distributions which ship nodejs-esbuild can rebuild the bundle during package build
+# allow override from command line (e.g. for development builds)
 %if 0%{?fedora} >= 42
-%define rebuild_bundle 1
+%{!?rebuild_bundle: %define rebuild_bundle 1}
 %endif
 
 # to avoid using asciidoc-py in RHEL and CentOS we use the prebuilt docs
@@ -116,13 +117,17 @@ BuildRequires: openssh-clients
 BuildRequires: krb5-server
 BuildRequires: gdb
 
-%if %{defined rebuild_bundle}
+%if 0%{?rebuild_bundle}
 BuildRequires: nodejs
 BuildRequires: nodejs-esbuild
 %endif
 
 %if !%{defined bundle_docs}
+%if 0%{?suse_version}
+BuildRequires: /usr/bin/asciidoctor
+%else
 BuildRequires: asciidoctor
+%endif
 %endif
 
 BuildRequires:  selinux-policy
@@ -139,7 +144,7 @@ Requires: cockpit-system
 Recommends: (cockpit-storaged if udisks2)
 Recommends: (cockpit-packagekit if dnf)
 %if 0%{?suse_version} == 0
-Recommends: (dnf5-daemonserver if dnf5)
+Recommends: (dnf5daemon-server if dnf5)
 %endif
 Suggests: python3-pcp
 
@@ -164,12 +169,12 @@ BuildRequires:  python3-pytest-timeout
 
 %prep
 %setup -q -n cockpit-%{version}
-%if %{defined rebuild_bundle}
+%if 0%{?rebuild_bundle}
 %setup -q -D -T -a 1 -n cockpit-%{version}
 %endif
 
 %build
-%if %{defined rebuild_bundle}
+%if 0%{?rebuild_bundle}
 rm -rf dist
 # HACK: node module packaging is currently broken in Fedora ≤ 43, should be in
 # common location, not major version specific one
@@ -220,13 +225,11 @@ install -d %{buildroot}%{_docdir}/cockpit/guide
 cp -rp %{docbundledir}/* %{buildroot}%{_docdir}/cockpit/guide/
 # Install pre-built man pages
 %define manbundledir %{_builddir}/%{name}-%{version}/doc/output/man
-install -D -p -m 644 %{manbundledir}/cockpit.1 %{buildroot}%{_mandir}/man1/cockpit.1
-install -D -p -m 644 %{manbundledir}/cockpit-bridge.1 %{buildroot}%{_mandir}/man1/cockpit-bridge.1
-install -D -p -m 644 %{manbundledir}/cockpit-desktop.1 %{buildroot}%{_mandir}/man1/cockpit-desktop.1
-install -D -p -m 644 %{manbundledir}/cockpit.conf.5 %{buildroot}%{_mandir}/man5/cockpit.conf.5
-install -D -p -m 644 %{manbundledir}/cockpit-ws.8 %{buildroot}%{_mandir}/man8/cockpit-ws.8
-install -D -p -m 644 %{manbundledir}/cockpit-tls.8 %{buildroot}%{_mandir}/man8/cockpit-tls.8
-install -D -p -m 644 %{manbundledir}/pam_ssh_add.8 %{buildroot}%{_mandir}/man8/pam_ssh_add.8
+for section in 1 5 8; do
+  for manpage in %{manbundledir}/*.${section}; do
+    install -D -p -m 644 "$manpage" %{buildroot}%{_mandir}/man${section}/$(basename "$manpage")
+  done
+done
 %endif
 
 # Build the package lists for resource packages

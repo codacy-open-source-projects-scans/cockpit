@@ -344,6 +344,7 @@ session include system-auth
     @testlib.skipBeiboot("no local overrides/PAM config in beiboot mode")
     def testMultipleBridgeConfig(self):
         b = self.browser
+        m = self.machine
 
         self.write_file("/etc/cockpit/shell.override.json", """
 {
@@ -387,10 +388,29 @@ session include system-auth
         b.wait_in_text(".pf-v6-c-modal-box select", "Polkit")
         b.click(".pf-v6-c-modal-box button:contains('Authenticate')")
         b.wait_in_text(".pf-v6-c-modal-box", "Please authenticate")
+        # wrong password
+        b.set_input_text(".pf-v6-c-modal-box input", "wrong")
+        b.click(".pf-v6-c-modal-box button:contains('Authenticate')")
+
+        # polkit only prompts once, so we expect Permission denied
+        b.wait_text(".pf-v6-c-modal-box__title-text", "Problem becoming administrator")
+        b.wait_in_text(".pf-v6-c-modal-box", "Not authorized")
+        b.click(".pf-v6-c-modal-box button:contains('Close')")
+
+        # try again with correct password
+        b.open_superuser_dialog()
+        b.wait_text(".pf-v6-c-modal-box__title-text", "Switch to administrative access")
+        b.set_val(".pf-v6-c-modal-box select", "Polkit")
+        b.wait_in_text(".pf-v6-c-modal-box select", "Polkit")
+        b.click(".pf-v6-c-modal-box button:contains('Authenticate')")
+        b.wait_in_text(".pf-v6-c-modal-box", "Please authenticate")
         b.set_input_text(".pf-v6-c-modal-box input", "foobar")
         b.click(".pf-v6-c-modal-box button:contains('Authenticate')")
         b.wait_not_present(".pf-v6-c-modal-box")
         b.check_superuser_indicator("Administrative access")
+
+        # Verify that sudo is not being used
+        self.assertEqual(m.execute(["pgrep", "-a", "sudo"], check=False).strip(), "")
 
         # Drop them
         b.open_superuser_dialog()
@@ -398,6 +418,19 @@ session include system-auth
         b.click(".pf-v6-c-modal-box button:contains('Limit access')")
         b.wait_not_present(".pf-v6-c-modal-box")
         b.check_superuser_indicator("Limited access")
+
+        # On "new" OSes we expect the socket-based agent helper
+        if m.image == "debian-testing":
+            m.execute("test -S /run/polkit/agent-helper.socket")
+            # not suid
+            self.assertEqual(m.execute("stat -c %A /usr/lib/polkit-1/polkit-agent-helper-1").strip(),
+                             "-rwxr-xr-x")
+        # reminder for ourselves in the distant future to remove the legacy path in the bridge
+        elif m.image.startswith("rhel-10"):
+            m.execute("! test -e /run/polkit/agent-helper.socket")
+            # suid root helper
+            self.assertEqual(m.execute("stat -c %A /usr/lib/polkit-1/polkit-agent-helper-1").strip(),
+                             "-rwsr-xr-x")
 
         # Run the regular sudo method, which should work as always
         b.open_superuser_dialog()

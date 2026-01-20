@@ -91,7 +91,7 @@ def build_rpms(
 # Helper functions to build image-customize options for various steps
 #
 
-def build_install_package(dist_tars: list[str], image: str) -> list[str]:
+def build_install_package(dist_tars: list[str], image: str, *, quick: bool) -> list[str]:
     """Default rpm/deb/arch package build/install"""
 
     # our images have distro cockpit packages pre-installed, remove them
@@ -132,7 +132,7 @@ def build_install_package(dist_tars: list[str], image: str) -> list[str]:
     else:
         args.append(r"find /var/lib/mock -name mock-pam-conv-mod.so -exec cp {} /usr/lib64/security/ \;")
 
-    if 'debian' in image or 'ubuntu' in image:
+    if not quick and ('debian' in image or 'ubuntu' in image):
         args.append("--run-command")
         suppress = {'initial-upload-closes-no-bugs', 'newer-standards-version'}
         # older lintian not yet complain about pkg/static/login.html and src/common/fail.html
@@ -141,11 +141,14 @@ def build_install_package(dist_tars: list[str], image: str) -> list[str]:
         # Ubuntu 22.04 raises elf-error on *-dbgsym: "In program headers: Unable to find program interpreter name"
         if image == "ubuntu-2204":
             suppress.add("elf-error")
+        # older OSes don't yet know about watch format v5; drop ubuntu-stable once that moves to lintian 2.127.0
+        if image in ["debian-trixie", "ubuntu-2204", "ubuntu-2404", "ubuntu-stable"]:
+            suppress.add("missing-debian-watch-file-standard")
 
         args.append(fr"""
             cd /var/tmp/build;
             runuser -u admin -- \
-                lintian --fail-on warning,error \
+                env TMPDIR=/var/tmp lintian --fail-on warning,error \
                 --tag-display-limit 0 --display-info \
                 --suppress-tags {','.join(suppress)} \
                 cockpit*.changes >&2""")
@@ -275,6 +278,10 @@ def main() -> int:
 
     dist_tars = subprocess.check_output([f'{BASE_DIR}/tools/make-dist'], text=True).strip().splitlines()
 
+    # Don't rebuild bundle if built with NODE_ENV=development
+    if os.environ.get('NODE_ENV') == 'development':
+        customize += ["--build-options", '--define "rebuild_bundle 0"']
+
     if args.image == "fedora-coreos":
         customize += build_install_ostree(dist_tars, args.image, verbose=args.verbose, quick=args.quick)
     elif args.image.endswith("-bootc"):
@@ -282,7 +289,7 @@ def main() -> int:
     elif args.container:
         customize += build_install_container(dist_tars, verbose=args.verbose, quick=args.quick)
     else:
-        customize += build_install_package(dist_tars, args.image)
+        customize += build_install_package(dist_tars, args.image, quick=args.quick)
 
     if not args.quick:
         customize += validate_packages()
