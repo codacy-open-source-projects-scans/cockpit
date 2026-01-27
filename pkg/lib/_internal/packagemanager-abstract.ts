@@ -88,6 +88,11 @@ export interface UpdateDetail extends Update {
   vendor_urls: string[]
 }
 
+export interface History {
+    timestamp: number
+    packages: Record<string, string>
+}
+
 export interface PackageManager {
   name: string
   check_missing_packages(pkgnames: string[], progress_cb?: ProgressCB): Promise<MissingPackages>;
@@ -99,6 +104,10 @@ export interface PackageManager {
   find_file_packages(files: string[], progress_cb?: ProgressCB): Promise<string[]>;
   get_updates<T extends boolean>(detail: T, progress_cb?: ProgressCB): Promise<T extends true ? UpdateDetail[] : Update[]>;
   update_packages(updates: Update[] | UpdateDetail[], progress_cb?: ProgressCB, transaction_path?: string): Promise<void>;
+  get_backend(): Promise<string>;
+  get_last_refresh_time(): Promise<number>;
+  get_history(): Promise<History[]>;
+  is_available(pkgnames: string[]): Promise<boolean>;
 }
 
 export class UnsupportedError extends Error {

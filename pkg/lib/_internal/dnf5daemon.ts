@@ -19,7 +19,7 @@
 
 import cockpit from "cockpit";
 import { superuser } from 'superuser';
-import { InstallProgressCB, MissingPackages, PackageManager, ProgressCB, ResolveError, InstallProgressType, UpdateDetail, Update, Severity } from './packagemanager-abstract';
+import { InstallProgressCB, MissingPackages, PackageManager, ProgressCB, ResolveError, InstallProgressType, UpdateDetail, Update, Severity, History } from './packagemanager-abstract';
 
 let _dbus_client: cockpit.DBusClient | null = null;
 
@@ -119,6 +119,10 @@ interface TransactionProblem {
     goal_job_settings: { t: "a{vs}", "v": { to_repo_ids: { t: "as", v: string[] } } };
     problem: { t: "u", v: number };
     spec: { t: "s", v: "appstream-data" };
+}
+
+interface RepoListResult {
+    cache_updated: { t: "x", "v": number };
 }
 
 enum GoalProblem {
@@ -629,5 +633,36 @@ export class Dnf5DaemonManager implements PackageManager {
             }
             await call(session, "org.rpm.dnf.v0.Goal", "do_transaction", [{}]);
         }, signal_emitted);
+    }
+
+    async get_backend(): Promise<string> {
+        return "dnf5";
+    }
+
+    async get_last_refresh_time(): Promise<number> {
+        let last_time = 0;
+        await this.with_session(async (session) => {
+            // Bug? Does this need load repo? As the result was somehow -1 at one point.
+            const [results] = await call(session, "org.rpm.dnf.v0.rpm.Repo", "list", [{ repo_attrs: { t: 'as', v: ['cache_updated'] } }]) as RepoListResult[][];
+            for (const result of results) {
+                if (result.cache_updated.v > last_time)
+                    last_time = result.cache_updated.v;
+            }
+        });
+
+        const now = parseInt(await cockpit.spawn(["date", "+%s"]), 10);
+        return now - last_time;
+    }
+
+    async get_history(): Promise<History[]> {
+        // TODO: https://github.com/rpm-software-management/dnf5/issues/2538
+        throw new Error("not implemented");
+        return [];
+    }
+
+    async is_available(_pkgnames: string[]): Promise<boolean> {
+        // TODO: requires RHEL to have dnf5 to run TestUpdatesSubscriptions.testNoUpdates
+        throw new Error("not implemented");
+        return false;
     }
 }

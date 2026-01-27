@@ -83,6 +83,7 @@ import callTracerScript from './callTracer.py';
 import "./updates.scss";
 import { Truncate } from '@patternfly/react-core/dist/esm/components/Truncate/index.js';
 import { Severity } from '_internal/packagemanager-abstract';
+import { getPackageManager } from 'packagemanager';
 
 const _ = cockpit.gettext;
 
@@ -654,7 +655,7 @@ const UpdateSuccess = ({ onIgnore, openServiceRestartDialog, openRebootDialog, r
     if (!checkRestartAvailable) {
         /* tracer is not available any more in RHEL 10; as a special case, if only kpatch and kernel were
          * updated, don't reboot (as that's their whole raison d'être) */
-        const pkgs = Object.keys(history[0] ?? {}).filter(p => p != "_time");
+        const pkgs = Object.keys(history[0].packages ?? {});
         const only_kpatch = pkgs.filter(p => p.startsWith("kpatch")).length > 0 &&
                             pkgs.filter(p => !p.startsWith("kernel") && !p.startsWith("kpatch")).length == 0;
 
@@ -674,7 +675,7 @@ const UpdateSuccess = ({ onIgnore, openServiceRestartDialog, openRebootDialog, r
                              secondary={actions} />
             <div className="flow-list-blank-slate">
                 <ExpandableSection toggleText={_("Package information")}>
-                    <PackageList packages={history[0]} />
+                    <PackageList packages={history[0].packages} />
                 </ExpandableSection>
             </div>
         </>);
@@ -752,7 +753,7 @@ const UpdateSuccess = ({ onIgnore, openServiceRestartDialog, openRebootDialog, r
             } />
         <div className="flow-list-blank-slate">
             <ExpandableSection toggleText={_("Package information")}>
-                <PackageList packages={history[0]} />
+                <PackageList packages={history[0].packages} />
             </ExpandableSection>
         </div>
     </>);
@@ -987,6 +988,7 @@ class OsUpdates extends React.Component {
             showRebootSystemDialog: false,
             backend: "",
             rebootAfterSuccess: false,
+            packageManager: null,
         };
         this.handleLoadError = this.handleLoadError.bind(this);
         this.handleRefresh = this.handleRefresh.bind(this);
@@ -999,13 +1001,16 @@ class OsUpdates extends React.Component {
         this.setState({ [key]: value });
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         this._mounted = true;
         this.checkNeedsRestart();
 
         superuser.addEventListener("changed", this.handleSuperUserChange);
 
-        PK.getBackendName().then(([prop]) => this.setState({ backend: prop.v }));
+        // HACK: force usage of PackageKit backend
+        const packageManager = await getPackageManager(true);
+        const backend = await packageManager.get_backend();
+        this.setState({ packageManager, backend });
 
         // check if there is an upgrade in progress already; if so, switch to "applying" state right away
         PK.call("/org/freedesktop/PackageKit", "org.freedesktop.PackageKit", "GetTransactionList", [])
@@ -1176,10 +1181,10 @@ class OsUpdates extends React.Component {
 
         // check if there is an available version of coreutils; this is a heuristics for unregistered RHEL
         // systems to see if they need a subscription to get "proper" OS updates
-        PK.is_available(["coreutils"], null)
+        this.state.packageManager.is_available(["coreutils"])
                 .then((have_coreutils) => this.setState({ haveOsRepo: have_coreutils }),
                       ex => console.warn("Resolving coreutils failed:", JSON.stringify(ex)))
-                .then(() => PK.get_updates(true, null).then(updates => {
+                .then(() => this.state.packageManager.get_updates(true, null).then(updates => {
                     debug("GetUpdates result:", updates);
                     if (updates.length) {
                         for (const update of updates) {
@@ -1199,43 +1204,13 @@ class OsUpdates extends React.Component {
                 .catch(this.handleLoadError);
     }
 
-    loadHistory() {
-        const history = [];
-
-        // would be nice to filter only for "update-packages" role, but can't here
-        PK.transaction("GetOldTransactions", [0], {
-            Transaction: (objPath, timeSpec, succeeded, role, duration, data) => {
-                if (role !== PK.Enum.ROLE_UPDATE_PACKAGES)
-                    return;
-                    // data looks like:
-                    // downloading\tbash-completion;1:2.6-1.fc26;noarch;updates-testing
-                    // updating\tbash-completion;1:2.6-1.fc26;noarch;updates-testing
-                const _time = Date.parse(timeSpec);
-                if (isNaN(_time)) {
-                    debug(`Transaction has an invalid timespec=${timeSpec}`);
-                    return;
-                }
-                const pkgs = { _time };
-                let empty = true;
-                data.split("\n").forEach(line => {
-                    const fields = line.trim().split("\t");
-                    if (fields.length >= 2) {
-                        const pkgId = fields[1].split(";");
-                        pkgs[pkgId[0]] = pkgId[1];
-                        empty = false;
-                    }
-                });
-                if (!empty)
-                    history.unshift(pkgs); // PK reports in time-ascending order, but we want the latest first
-            },
-
-            // only update the state once to avoid flicker
-            Finished: () => {
-                if (history.length > 0)
-                    this.setState({ history });
-            }
-        })
-                .catch(ex => console.warn("Failed to load old transactions:", ex));
+    async loadHistory() {
+        try {
+            const history = await this.state.packageManager.get_history();
+            this.setState({ history });
+        } catch (exc) {
+            console.warn("Failed to load old transactions (history):", exc);
+        }
     }
 
     initialLoadOrRefresh() {
@@ -1252,19 +1227,19 @@ class OsUpdates extends React.Component {
             this.loadUpdates();
     }
 
-    loadOrRefresh(always_load) {
-        PK.call("/org/freedesktop/PackageKit", "org.freedesktop.PackageKit", "GetTimeSinceAction",
-                [PK.Enum.ROLE_REFRESH_CACHE])
-                .then(([seconds]) => {
-                    this.setState({ timeSinceRefresh: seconds });
+    async loadOrRefresh(always_load) {
+        try {
+            const seconds = await this.state.packageManager.get_last_refresh_time();
+            this.setState({ timeSinceRefresh: seconds });
 
-                    // automatically trigger refresh for ≥ 1 day or if never refreshed
-                    if (seconds >= 24 * 3600 || seconds < 0)
-                        this.handleRefresh();
-                    else if (always_load)
-                        this.loadUpdates();
-                })
-                .catch(this.handleLoadError);
+            // automatically trigger refresh for ≥ 1 day or if never refreshed
+            if (seconds >= 24 * 3600 || seconds < 0)
+                this.handleRefresh();
+            else if (always_load)
+                this.loadUpdates();
+        } catch (exc) {
+            this.handleLoadError(exc);
+        }
     }
 
     watchUpdates(transactionPath) {
@@ -1278,14 +1253,15 @@ class OsUpdates extends React.Component {
                                            this.setState({ applyTransaction: null, applyTransactionProps: {}, applyActions: [] });
 
                                            if (exit === PK.Enum.EXIT_SUCCESS) {
-                                               if (this.state.checkRestartAvailable) {
-                                                   this.setState({ state: "loading", loadPercent: null });
-                                                   this.checkNeedsRestart()
-                                                           .finally(() => this.setState({ state: "updateSuccess" }));
-                                               } else {
-                                                   this.setState({ state: "updateSuccess", loadPercent: null });
-                                               }
-                                               this.loadHistory();
+                                               this.setState({ state: "loading", loadPercent: null });
+                                               this.loadHistory().then(() => {
+                                                   if (this.state.checkRestartAvailable) {
+                                                       this.checkNeedsRestart()
+                                                               .finally(() => this.setState({ state: "updateSuccess" }));
+                                                   } else {
+                                                       this.setState({ state: "updateSuccess", loadPercent: null });
+                                                   }
+                                               });
                                            } else if (exit === PK.Enum.EXIT_CANCELLED) {
                                                if (this.state.checkRestartAvailable) {
                                                    this.setState({ state: "loading", loadPercent: null });
@@ -1605,7 +1581,7 @@ class OsUpdates extends React.Component {
 
     handleRefresh() {
         this.setState({ state: "refreshing", loadPercent: null });
-        PK.refresh(true, data => this.setState({ loadPercent: data.percentage }))
+        this.state.packageManager.refresh(true, data => this.setState({ loadPercent: data.percentage }))
                 .then(() => {
                     if (this._mounted === false)
                         return;
