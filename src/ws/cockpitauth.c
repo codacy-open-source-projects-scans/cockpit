@@ -23,19 +23,18 @@
 
 #include "cockpitws.h"
 
-#include "websocket/websocket.h"
+#include "websocket.h"
 
 #include "common/cockpitauthorize.h"
 #include "common/cockpitconf.h"
-#include "common/cockpiterror.h"
-#include "common/cockpithacks.h"
+#include "cockpiterror.h"
 #include "common/cockpithex.h"
-#include "common/cockpitjson.h"
+#include "cockpitjson.h"
 #include "common/cockpitmemory.h"
-#include "common/cockpitpipe.h"
-#include "common/cockpitpipetransport.h"
-#include "common/cockpitsystem.h"
-#include "common/cockpitwebserver.h"
+#include "cockpitpipe.h"
+#include "cockpitpipetransport.h"
+#include "cockpitsystem.h"
+#include "cockpitwebserver.h"
 
 #include <sys/socket.h>
 #include <stdlib.h>
@@ -311,7 +310,7 @@ cockpit_auth_init (CockpitAuth *self)
   self->max_startups_rate = 100;
 }
 
-gchar *
+static gchar *
 cockpit_auth_nonce (CockpitAuth *self)
 {
   const guchar *key;
@@ -469,7 +468,7 @@ session_child_setup (gpointer data)
 
   close (child->io);
 
-  closefrom (3);
+  close_range (3, ~0U, 0);
 }
 
 static CockpitPipe *
@@ -1389,16 +1388,6 @@ cockpit_auth_local_async (CockpitAuth *self,
   g_free (csrf_token);
   g_object_unref (transport);
   cockpit_creds_unref (creds);
-}
-
-gboolean
-cockpit_auth_local_finish (CockpitAuth *self,
-                           GAsyncResult *result,
-                           GError **error)
-{
-  g_return_val_if_fail (g_task_is_valid (result, self), FALSE);
-
-  return g_task_propagate_boolean (G_TASK (result), error);
 }
 
 /*

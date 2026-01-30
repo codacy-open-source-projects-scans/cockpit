@@ -38,7 +38,7 @@ AC_PROG_RANLIB
 # This is required to find the correct `ar` for cross-compiling
 AC_CHECK_TOOL(AR, ar)
 
-AC_CHECK_FUNCS(closefrom pidfd_getpid)
+AC_CHECK_FUNCS(pidfd_getpid)
 
 AM_SILENT_RULES([yes])
 
@@ -76,8 +76,8 @@ esac
 AC_SUBST([fts_LIBS])
 
 # pkg-config
-GLIB_API_VERSION="GLIB_VERSION_2_56"
-PKG_CHECK_MODULES(glib, [gio-2.0 >= 2.56 gio-unix-2.0])
+GLIB_API_VERSION="GLIB_VERSION_2_68"
+PKG_CHECK_MODULES(glib, [gio-2.0 >= 2.68 gio-unix-2.0])
 glib_CFLAGS="${glib_CFLAGS} -DGLIB_VERSION_MIN_REQUIRED=$GLIB_API_VERSION"
 glib_CFLAGS="${glib_CFLAGS} -DGLIB_VERSION_MAX_ALLOWED=$GLIB_API_VERSION"
 

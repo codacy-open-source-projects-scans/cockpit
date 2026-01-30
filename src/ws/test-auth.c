@@ -23,11 +23,10 @@
 #include "cockpitws.h"
 
 #include "common/cockpitconf.h"
-#include "common/cockpiterror.h"
-#include "common/cockpitsystem.h"
-#include "common/cockpitwebrequest-private.h"
+#include "cockpiterror.h"
+#include "cockpitwebrequest-private.h"
 
-#include "websocket/websocket.h"
+#include "websocket.h"
 
 #include "testlib/cockpittest.h"
 #include "testlib/mock-auth.h"
@@ -60,7 +59,7 @@ static void
 setup_normal (Test *test,
               gconstpointer data)
 {
-  cockpit_config_file = SRCDIR "/src/ws/mock-config/cockpit/cockpit.conf";
+  cockpit_config_file = SRCDIR "/src/common/mock-config/cockpit/cockpit.conf";
   test->auth = cockpit_auth_new (FALSE, COCKPIT_AUTH_NONE);
 }
 
@@ -68,7 +67,7 @@ static void
 setup_alt_config (Test *test,
               gconstpointer data)
 {
-  cockpit_config_file = SRCDIR "/src/ws/mock-config/cockpit/cockpit-alt.conf";
+  cockpit_config_file = SRCDIR "/src/common/mock-config/cockpit/cockpit-alt.conf";
   test->auth = cockpit_auth_new (FALSE, COCKPIT_AUTH_NONE);
 }
 
@@ -1263,7 +1262,7 @@ main (int argc,
   cockpit_ws_session_program = BUILDDIR "/mock-auth-command";
   cockpit_ws_service_idle = 1;
 
-  cockpit_setenv_check ("COCKPIT_WS_PROCESS_IDLE", "2", TRUE);
+  cockpit_test_setenv ("COCKPIT_WS_PROCESS_IDLE", "2");
 
   cockpit_test_init (&argc, &argv);
 

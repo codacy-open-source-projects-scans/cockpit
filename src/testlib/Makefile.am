@@ -11,6 +11,8 @@ TEST_CPP = \
 TEST_LIBS = \
 	libcockpit-test.a \
 	$(libcockpit_common_a_LIBS) \
+	$(json_glib_LIBS) \
+	$(glib_LIBS) \
 	$(NULL)
 
 # -----------------------------------------------------------------------------

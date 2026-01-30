@@ -19,14 +19,11 @@
 
 #include "config.h"
 
-#include "common/cockpitsystem.h"
 #include "testlib/cockpittest.h"
 
 #include <fcntl.h>
 #include <glib.h>
 #include <sys/stat.h>
-
-#include "common/cockpithacks-glib.h"
 
 #define CERTIFICATE_HELPER  BUILDDIR "/cockpit-certificate-ensure"
 
@@ -269,8 +266,8 @@ const gchar *good_ecc_files[] = { SRCDIR "/test/data/mock-ecc.crt",
                                   SRCDIR "/test/data/mock-ecc.key", NULL };
 const gchar *bad_files[] = { SRCDIR "/bad", NULL };
 const gchar *bad_files2[] = { SRCDIR "/test/data/mock-server.crt", SRCDIR "/bad2", NULL };
-const gchar *invalid_files1[] = { SRCDIR "/src/ws/mock-config/cockpit/cockpit.conf",
-                                  SRCDIR "/src/ws/mock-config/cockpit/cockpit-alt.conf", NULL };
+const gchar *invalid_files1[] = { SRCDIR "/src/common/mock-config/cockpit/cockpit.conf",
+                                  SRCDIR "/src/common/mock-config/cockpit/cockpit-alt.conf", NULL };
 const gchar *invalid_files2[] = { SRCDIR "/test/data/mock-server.crt",
                                   SRCDIR "/test/data/mock-client.crt", NULL };
 const gchar *invalid_files3[] = { SRCDIR "/test/data/mock-client.key", NULL };
