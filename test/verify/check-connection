@@ -243,6 +243,7 @@ class TestConnection(testlib.MachineCase):
         expect_actives(ws_socket=True, instance_sockets=True, http_instances=["http"])
         self.assertRaises(subprocess.CalledProcessError, m.execute,
                           "curl --silent https://127.0.0.1:9090")
+        self.allow_journal_messages("cockpit-tls: got TLS connection, but our server does not have a certificate/key.*")
         # c-tls knows it can't do https, and not activate that instance
         expect_actives(ws_socket=True, instance_sockets=True, http_instances=["http"])
 
@@ -377,6 +378,16 @@ class TestConnection(testlib.MachineCase):
             output = m.execute('openssl s_client -connect 172.27.0.15:9090 2>&1')
             m.message(output)
             self.assertIn("DONE", output)
+
+            # c-tls respects crypto-policy: newer Fedora-like OSes use hybrid PQC+EC key exchange by default
+            if (m.image.startswith(("fedora", "rhel", "centos")) and
+                    not m.image.startswith(("rhel-9", "centos-9")) and
+                    # HACK: current cockpit/ws container on fedora-coreos image is still F42 based
+                    # once cockpit >= 355 hits Fedora updates and ws rebuilds, that moves to "works"
+                    m.image not in ["fedora-42", "fedora-coreos"]):
+                self.assertIn("Negotiated TLS1.3 group: X25519MLKEM", output)
+            else:
+                self.assertNotIn("Negotiated TLS1.3 group", output)
 
             # has proper keyUsage and SAN (both with sscg and with self-signed)
             output = m.execute("openssl s_client -showcerts -connect 172.27.0.15:9090 |"
@@ -581,6 +592,39 @@ class TestConnection(testlib.MachineCase):
         # now it should not redirect
         self.assertIn("HTTP/1.1 200 OK", m.execute("curl --head http://127.0.0.1:9090"))
         self.assertIn("HTTP/1.1 200 OK", m.execute("curl --head http://172.27.0.15:9090"))
+
+        # FIXME: this message makes absolutely no sense in this test, and is not reproducible locally
+        # but it keeps happening in CI
+        self.allow_journal_messages("Received unexpected TLS connection; use cockpit-tls for TLS termination")
+
+    @testlib.nondestructive
+    @testlib.skipWsContainer("ws container doesn't have certs on the host")
+    @testlib.skipImage("no PQC support", "arch", "debian*", "ubuntu*", "fedora-42", "rhel-9*", "centos-9*")
+    def testPQC(self):
+        m = self.machine
+
+        # note: deploying this is NOT RECOMMENDED! Production systems should use a hybrid PQC + EC certificate,
+        # but that is not specified/supported yet as of Jan 2026.
+        # See https://issues.redhat.com/browse/RHELMISC-11973
+        m.execute("sscg --key-type=mldsa --cert-key-file /etc/cockpit/ws-certs.d/mldsa.key "
+                  "--cert-file /etc/cockpit/ws-certs.d/mldsa.crt "
+                  "--ca-file /etc/cockpit/ws-certs.d/mldsa-ca.crt "
+                  "--subject-alt-name localhost "
+                  "--subject-alt-name IP:172.27.0.15 "
+                  "--subject-alt-name IP:127.0.0.2")
+
+        m.start_cockpit(tls=True)
+
+        # Check PQC signature and KEX with curl, can't do that with browser (no API)
+        output = m.execute('openssl s_client -CAfile /etc/cockpit/ws-certs.d/mldsa-ca.crt -connect 172.27.0.15:9090 2>&1')
+        self.assertIn("DONE", output)
+        self.assertIn("Peer signature type: mldsa44", output)
+        self.assertIn("Negotiated TLS1.3 group: X25519MLKEM", output)
+
+        # TODO: this does not currently work with Firefox/Chromium, they don't accept MLKEM certificates
+        # see discussion in https://issues.redhat.com/browse/RHELMISC-11973
+        self.assertRaises(testlib.Error, self.login_and_go, "/system", tls=True)
+        self.allow_journal_messages(".*gnutls_handshake failed: No supported cipher suites.*")
 
     @testlib.nondestructive
     def testConfigOrigins(self):
@@ -1501,6 +1545,8 @@ ProtocolHeader = X-Forwarded-Proto
         # these tests are running the cockpit-ws binary directly, not via cockpit.socket
         m.execute("systemctl start cockpit-session.socket")
         self.allow_journal_messages("audit.*bool=httpd_can_network_connect.*val=1.*")
+        # tests don't patiently wait for sessions to shut down properly
+        self.allow_restart_journal_messages()
 
     def callProxyCurl(self, path, *args):
         # should use nginx' certificate, not cockpit's; use --resolve so that SNI matches the certificate's CN
