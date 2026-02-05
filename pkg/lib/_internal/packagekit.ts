@@ -1,20 +1,6 @@
 /*
- * This file is part of Cockpit.
- *
  * Copyright (C) 2025 Red Hat, Inc.
- *
- * Cockpit is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * Cockpit is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Cockpit; If not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 import { InstallProgressCB, MissingPackages, PackageManager, ProgressCB, InstallProgressType, UpdateDetail, Update, ProgressData, History } from './packagemanager-abstract';
@@ -279,12 +265,35 @@ export class PackageKitManager implements PackageManager {
                 if (role !== PK.Enum.ROLE_UPDATE_PACKAGES)
                     return;
 
-                // data looks like:
-                // downloading\tbash-completion;1:2.6-1.fc26;noarch;updates-testing
-                // updating\tbash-completion;1:2.6-1.fc26;noarch;updates-testing
-                const timestamp = Date.parse(timeSpec);
+                /**
+                 * data looks like:
+                 * downloading\tbash-completion;1:2.6-1.fc26;noarch;updates-testing
+                 * updating\tbash-completion;1:2.6-1.fc26;noarch;updates-testing
+                 * timeSpec will be one of:
+                 * 2026-01-29T12:57:49.112827-08
+                 * 2026-01-29T19:27:49.112827-01:30
+                 * 2026-01-29T20:57:49.112827Z
+                 * depending on timezone and PackageKit version
+                 */
+                let timestamp = Date.parse(timeSpec);
                 if (isNaN(timestamp)) {
-                    console.debug(`Transaction has an invalid timespec=${timeSpec}`);
+                    /*
+                    * Neither Firefox's nor Chromium's parsers handle the short offset
+                    * format (first one) as of 2026-01:
+                    * https://bugzilla.mozilla.org/show_bug.cgi?id=2013444
+                    * https://issues.chromium.org/issues/479862357
+                    * so we hack around it by adding the :00
+                    */
+                    const shortoff_regex = /[-+]\d\d$/;
+                    if (shortoff_regex.exec(timeSpec)) {
+                        const fixed_timeSpec = timeSpec + ":00";
+                        // console.debug(`Transaction has an invalid timeSpec=${timeSpec}, trying fixed=${fixed_timeSpec}`);
+                        timestamp = Date.parse(fixed_timeSpec);
+                    }
+                }
+
+                if (isNaN(timestamp)) {
+                    console.warn(`Transaction has an invalid timeSpec=${timeSpec}, skipping`);
                     return;
                 }
 

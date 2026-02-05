@@ -1,19 +1,7 @@
-# This file is part of Cockpit.
 #
 # Copyright (C) 2017 Red Hat, Inc.
-#
-# Cockpit is free software; you can redistribute it and/or modify it
-# under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation; either version 2.1 of the License, or
-# (at your option) any later version.
-#
-# Cockpit is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with Cockpit; If not, see <https://www.gnu.org/licenses/>.
+# SPDX-License-Identifier: LGPL-2.1-or-later
+
 
 import logging
 import os
@@ -32,6 +20,9 @@ class PackageCase(MachineCase):
         if self.machine.ostree_image:
             logging.warning("PackageCase: OSTree images can't install additional packages")
             return
+
+        # PackageKit 1.3.4 no longer installs pkcon by default
+        self.packagekit_cmd = self.machine.execute("command -v pkcon pkgcli").strip().split()[0]
 
         # expected backend; hardcode this on image names to check the auto-detection
         if self.machine.image.startswith("debian") or self.machine.image.startswith("ubuntu"):
@@ -459,7 +450,7 @@ post_upgrade() {{
     def addPackageSet(self, name: str) -> None:
         self.machine.execute(f"mkdir -p {self.repo_dir}; cp /var/lib/package-sets/{name}/* {self.repo_dir}")
 
-    def enableRepo(self) -> None:
+    def enableRepo(self, *, refresh_repo: bool = False) -> None:
         if self.backend == "apt":
             self.createAptChangelogs()
             self.machine.execute(f"""echo 'deb [trusted=yes] file://{self.repo_dir} /' > /etc/apt/sources.list.d/test.list
@@ -485,7 +476,8 @@ Server = file://{self.repo_dir}
             if 'testrepo' not in self.machine.execute('grep testrepo /etc/pacman.conf || true'):
                 self.machine.write("/etc/pacman.conf", config, append=True)
                 # packagekit does not detect new repositories without a restart and refresh
-                self.machine.execute("systemctl restart packagekit; pkcon refresh force")
+                self.machine.execute("systemctl restart packagekit")
+                self.refreshMetadata(force=True)
 
         else:
             self.machine.execute(f"""printf '[updates]\nname=cockpittest\nbaseurl=file://{self.repo_dir}\nenabled=1\ngpgcheck=0\n' > /etc/yum.repos.d/cockpittest.repo
@@ -493,6 +485,12 @@ Server = file://{self.repo_dir}
                                      createrepo_c {self.repo_dir}
                                      modifyrepo_c /tmp/updateinfo.xml {self.repo_dir}/repodata
                                      dnf clean all""")
+
+        if refresh_repo:
+            self.refreshMetadata()
+
+    def refreshMetadata(self, *, force: bool = False) -> None:
+        self.machine.execute(f"{self.packagekit_cmd} refresh {'force' if force else ''}")
 
     def removePackages(self, packages: list[str]) -> None:
         packages_str = ' '.join(packages)

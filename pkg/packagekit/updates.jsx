@@ -1,20 +1,6 @@
 /*
- * This file is part of Cockpit.
- *
  * Copyright (C) 2017 Red Hat, Inc.
- *
- * Cockpit is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * Cockpit is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Cockpit; If not, see <https://www.gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 import '../lib/patternfly/patternfly-6-cockpit.scss';
 import 'polyfills'; // once per application
@@ -655,7 +641,7 @@ const UpdateSuccess = ({ onIgnore, openServiceRestartDialog, openRebootDialog, r
     if (!checkRestartAvailable) {
         /* tracer is not available any more in RHEL 10; as a special case, if only kpatch and kernel were
          * updated, don't reboot (as that's their whole raison d'être) */
-        const pkgs = Object.keys(history[0].packages ?? {});
+        const pkgs = Object.keys(history[0]?.packages ?? {});
         const only_kpatch = pkgs.filter(p => p.startsWith("kpatch")).length > 0 &&
                             pkgs.filter(p => !p.startsWith("kernel") && !p.startsWith("kpatch")).length == 0;
 
@@ -673,11 +659,13 @@ const UpdateSuccess = ({ onIgnore, openServiceRestartDialog, openRebootDialog, r
                              headingLevel="h5"
                              paragraph={paragraph}
                              secondary={actions} />
+            { history[0]?.packages &&
             <div className="flow-list-blank-slate">
                 <ExpandableSection toggleText={_("Package information")}>
                     <PackageList packages={history[0].packages} />
                 </ExpandableSection>
             </div>
+            }
         </>);
     }
 
@@ -751,11 +739,13 @@ const UpdateSuccess = ({ onIgnore, openServiceRestartDialog, openRebootDialog, r
                     </div>
                 </>
             } />
+        { history[0]?.packages &&
         <div className="flow-list-blank-slate">
             <ExpandableSection toggleText={_("Package information")}>
                 <PackageList packages={history[0].packages} />
             </ExpandableSection>
         </div>
+        }
     </>);
 };
 
