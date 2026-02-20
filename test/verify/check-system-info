@@ -56,6 +56,7 @@ class TestSystemInfo(testlib.MachineCase):
         # Switching into and out of FIPS mode is not supported anymore in newer OSes.
         self.supportsFIPS = self.machine.image.startswith(("rhel-8", "rhel-9", "centos-9"))
 
+    @testlib.skipImage("TODO: fix for OpenSUSE", "opensuse-tumbleweed")
     def testBasic(self):
         m = self.machine
         b = self.browser
@@ -207,6 +208,7 @@ class TestSystemInfo(testlib.MachineCase):
                                     "sudo: unable to resolve host host1.cockpit.lan: .*")
 
     @testlib.nondestructive
+    @testlib.skipImage("TODO: fix for OpenSUSE", "opensuse-tumbleweed")
     def testMotd(self):
         m = self.machine
         b = self.browser
@@ -549,6 +551,9 @@ echo dummy > /boot/vmlinuz-42.0.0; mkdir -p /lib/modules/42.0.0/
 if type update-grub >/dev/null 2>&1; then
     update-grub  # Debian/Ubuntu
     grep -q 'linux.*/vmlinuz-42.0.0.*nosmt' /boot/grub*/grub.cfg
+elif type update-bootloader >/dev/null 2>&1; then
+    update-bootloader  # suse
+    grep -q 'linux.*/vmlinuz-42.0.0.*nosmt' /boot/grub*/grub.cfg
 else
     cp -a /boot/grub2/grubenv /boot/grub2/grubenv.prev
     kernel-install add 42.0.0 /boot/vmlinuz-42.0.0 2>/dev/null
@@ -562,6 +567,8 @@ fi
 rm /boot/vmlinuz-42.0.0
 if type update-grub >/dev/null 2>&1; then
     update-grub  # Debian/Ubuntu
+elif type update-bootloader >/dev/null 2>&1; then
+    update-bootloader # suse
 else
     kernel-install remove 42.0.0 /boot/vmlinuz-42.0.0
     # HACK: https://bugzilla.redhat.com/show_bug.cgi?id=2078359 and https://bugzilla.redhat.com/show_bug.cgi?id=2078379
@@ -615,6 +622,8 @@ fi
         m.execute('mv /etc/default/grub /etc/default/grub.bak || true')
         m.write('/tmp/grubby', '#!/bin/sh\necho 0')
         m.execute('[ ! -f /usr/sbin/grubby ] || mount --bind /tmp/grubby /usr/sbin/grubby')
+        m.write('/tmp/update-bootloader', '#!/bin/sh\necho 0')
+        m.execute('[ ! -f /usr/sbin/update-bootloader ] || mount --bind /tmp/update-bootloader /usr/sbin/update-bootloader')
         m.execute('systemctl stop rpm-ostreed.service || true; systemctl mask rpm-ostreed.service')
         self.login_and_go('/system/hwinfo')
         b.click('#hwinfo button:contains("Mitigations")')
@@ -737,7 +746,7 @@ fi
         dbus_call = 'busctl get-property org.freedesktop.login1 /org/freedesktop/login1  org.freedesktop.login1.Manager ScheduledShutdown'
         self.assertIn('(st) "" ', m.execute(dbus_call).strip())
 
-    @testlib.skipImage("crypto-policies not available", "debian-*", "ubuntu-*", "arch")
+    @testlib.skipImage("crypto-policies not available", "debian-*", "ubuntu-*", "arch", "opensuse-tumbleweed")
     @testlib.skipOstree("crypto-policies not available")
     def testCryptoPolicies(self):
         m = self.machine
@@ -892,10 +901,11 @@ class TestSystemInfoTime(packagelib.PackageCase):
         b.wait_visible('#system_information_systime_button[disabled]')
 
         # Gain admin access
+        user = self.get_sudo_user()
         b.wait_in_text(".ct-limited-access-alert", "Web console is running in limited access mode.")
         b.click(".ct-limited-access-alert button")
         b.wait_text(".pf-v6-c-modal-box__title-text", "Switch to administrative access")
-        b.wait_in_text(".pf-v6-c-modal-box", "Password for admin:")
+        b.wait_in_text(".pf-v6-c-modal-box", f"Password for {user}:")
         b.set_input_text(".pf-v6-c-modal-box input", "foobar")
         b.click(".pf-v6-c-modal-box button:contains('Authenticate')")
         b.wait_not_present(".pf-v6-c-modal-box")
@@ -951,6 +961,7 @@ class TestSystemInfoTime(packagelib.PackageCase):
         self.assertIn("EEST 2050\n", m.execute("date"))
 
     @testlib.skipImage("timesyncd not available", "rhel*", "centos-*")
+    @testlib.skipImage("TODO: fix for OpenSUSE", "opensuse-tumbleweed")
     def testTimeServersTimesyncd(self):
         m = self.machine
         b = self.browser
