@@ -25,6 +25,7 @@ setup (TestCase *tc,
   g_hash_table_insert (tc->variables, "oh", "marmalade");
   g_hash_table_insert (tc->variables, "oh_dash", "dash-marmalade");
   g_hash_table_insert (tc->variables, "empty", "");
+  g_hash_table_insert (tc->variables, "💩", "error");
 }
 
 static void
@@ -69,6 +70,9 @@ static const Fixture expand_fixtures[] = {
   { "lots", "Oh ${oh} says Scruffy ${empty} the ${Scruffy}",
       { "Oh ", "marmalade", " says Scruffy ", " the ", "janitor", NULL }
   },
+  { "unsupported-var", "${ig.nore} ${💩} ${Kōhī}", { "${ig.nore} ${💩} ${Kōhī}" } },
+  { "var-in-string", "te${oh}st", { "te", "marmalade", "st" } },
+  { "var-in-var-string", "te${test${oh}st", { "te${test", "marmalade", "st" } },
 };
 
 static void
