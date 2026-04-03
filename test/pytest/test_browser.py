@@ -9,22 +9,13 @@ import lcov
 import pytest
 from js_coverage import CoverageReport
 from webdriver_bidi import ChromiumBidi
-from yarl import URL
 
 SRCDIR = os.path.realpath(f'{__file__}/../../..')
 BUILDDIR = os.environ.get('abs_builddir', SRCDIR)
 
-SKIP = {
-    'base1/test-dbus-address.html',
-}
-
-XFAIL = {
-    'base1/test-websocket.html',
-}
-
 
 @contextlib.asynccontextmanager
-async def spawn_test_server() -> AsyncIterator[URL]:  # noqa:RUF029
+async def spawn_test_server() -> AsyncIterator[str]:  # noqa:RUF029
     if 'COVERAGE_RCFILE' in os.environ:
         coverage = ['coverage', 'run', '--parallel-mode', '--module']
     else:
@@ -45,7 +36,7 @@ async def spawn_test_server() -> AsyncIterator[URL]:  # noqa:RUF029
     os.close(addr_r)
 
     try:
-        yield URL(address)
+        yield address
     finally:
         server.kill()
         server.wait()
@@ -54,10 +45,8 @@ async def spawn_test_server() -> AsyncIterator[URL]:  # noqa:RUF029
 @pytest.mark.asyncio
 @pytest.mark.parametrize('html', glob.glob('**/test-*.html', root_dir=f'{SRCDIR}/qunit', recursive=True))
 async def test_browser(coverage_report: CoverageReport, html: str) -> None:
-    if html in SKIP:
-        pytest.skip()
-    elif html in XFAIL:
-        pytest.xfail()
+    if html == 'base1/test-websocket.html':
+        pytest.xfail("python bridge never implemented websocket-stream1 payload")
 
     async with (
         spawn_test_server() as base_url,
@@ -69,7 +58,7 @@ async def test_browser(coverage_report: CoverageReport, html: str) -> None:
         await browser.bidi(
             'browsingContext.navigate',
             context=browser.context,
-            url=str(base_url / 'qunit' / html),
+            url=f'{base_url}qunit/{html}',
             wait='complete'
         )
 
