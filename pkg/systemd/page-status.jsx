@@ -48,15 +48,15 @@ function icon_for_type(type) {
 function get_pficon(name) {
     // set data-pficon for the tests
     if (name == "security")
-        return <SecurityIcon data-pficon={name} />;
+        return <Icon isInline status="danger"><SecurityIcon data-pficon={name} /></Icon>;
     if (name == "enhancement")
-        return <EnhancementIcon data-pficon={name} />;
+        return <Icon isInline status="custom"><EnhancementIcon data-pficon={name} /></Icon>;
     if (name == "bug")
-        return <BugIcon data-pficon={name} className="page-status-bug-icon" />;
+        return <Icon isInline className="pf-m-important"><BugIcon data-pficon={name} /></Icon>;
     if (name == "check")
-        return <CheckIcon color="green" data-pficon={name} />;
+        return <Icon isInline status="success"><CheckIcon data-pficon={name} /></Icon>;
     if (name == "spinner")
-        return <Spinner size="md" data-pficon={name} />;
+        return <Spinner diameter="1em" data-pficon={name} />;
 
     throw new Error(`get_pficon(): unknown icon name ${name}`);
 }
