@@ -14,8 +14,8 @@ import { Popover } from "@patternfly/react-core/dist/esm/components/Popover/inde
 import { ExclamationTriangleIcon, ExternalLinkSquareAltIcon, HelpIcon } from '@patternfly/react-icons';
 
 import { ModalError } from 'cockpit-components-inline-notification.jsx';
-import { PrivilegedButton } from "cockpit-components-privileged.jsx";
-import { ProfilesMenuDialogBody } from "./profiles-menu-dialog-body.jsx";
+import { PrivilegedButton } from "cockpit-components-privileged";
+import { ProfilesMenuDialogBody } from "./profiles-menu-dialog-body";
 import { useDialogs } from "dialogs.jsx";
 import { useInit } from "hooks";
 

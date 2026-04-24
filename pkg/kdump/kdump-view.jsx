@@ -34,8 +34,8 @@ import { fmt_to_fragments } from 'utils.jsx';
 import { show_modal_dialog } from "cockpit-components-dialog.jsx";
 import { FormHelper } from "cockpit-components-form-helper";
 import { ModalError } from 'cockpit-components-inline-notification.jsx';
-import { PrivilegedButton } from "cockpit-components-privileged.jsx";
-import { ModificationsExportDialog } from "cockpit-components-modifications.jsx";
+import { PrivilegedButton } from "cockpit-components-privileged";
+import { ModificationsExportDialog } from "cockpit-components-modifications";
 
 const _ = cockpit.gettext;
 const DEFAULT_KDUMP_PATH = "/var/crash";
