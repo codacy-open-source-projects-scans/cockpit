@@ -63,11 +63,6 @@ static const char *agent_vars[] = {
 #define  READ_END   0
 #define  WRITE_END  1
 
-/* pre-set file descriptors */
-#define  STDIN   0
-#define  STDOUT  1
-#define  STDERR  2
-
 /* attribute for stored auth */
 #define STORED_AUTHTOK "pam_ssh_add_authtok"
 
@@ -574,10 +569,13 @@ pam_ssh_add_load (pam_handle_t *pamh,
     }
 
   /* Wait for the initial process to exit */
-  if (waitid (P_PID, pid, &result, WEXITED) < 0)
+  while (waitid (P_PID, pid, &result, WEXITED) < 0)
     {
-      error ("couldn't wait on ssh-add process: %m");
-      goto done;
+      if (errno != EINTR)
+        {
+          error ("couldn't wait on ssh-add process: %m");
+          goto done;
+        }
     }
 
   success = result.si_code == CLD_EXITED && result.si_status == 0;
@@ -585,7 +583,7 @@ pam_ssh_add_load (pam_handle_t *pamh,
   if (!success)
     {
       /* key loading failed, don't report as an error */
-      if (result.si_code == 1)
+      if (result.si_code == CLD_EXITED && result.si_status == 1)
         {
           success = 1;
           message ("Failed adding some keys");
@@ -684,10 +682,13 @@ pam_ssh_add_start_agent (pam_handle_t *pamh,
     }
 
   /* Wait for the initial process to exit */
-  if (waitid (P_PID, pid, &result, WEXITED) < 0)
+  while (waitid (P_PID, pid, &result, WEXITED) < 0)
     {
-      error ("couldn't wait on ssh-agent process: %m");
-      goto done;
+      if (errno != EINTR)
+        {
+          error ("couldn't wait on ssh-agent process: %m");
+          goto done;
+        }
     }
 
   success = result.si_code == CLD_EXITED && result.si_status == 0;
@@ -860,8 +861,12 @@ start_agent (pam_handle_t *pamh,
       /* parse and store the agent pid for later cleanup */
       if (strncmp (auth_pid, "SSH_AGENT_PID=", 14) == 0)
         {
-          unsigned long pid = strtoul (auth_pid + 14, NULL, 10);
-          if (pid > 0 && pid != ULONG_MAX)
+          char *endptr;
+          unsigned long pid;
+
+          errno = 0;
+          pid = strtoul (auth_pid + 14, &endptr, 10);
+          if (pid > 0 && *endptr == '\0' && !(pid == ULONG_MAX && errno == ERANGE))
             {
               ssh_agent_pid = pid;
               ssh_agent_uid = auth_pwd->pw_uid;
